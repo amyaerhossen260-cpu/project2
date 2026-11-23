@@ -1,0 +1,1388 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KCT Coin — Krypto Trust Coin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#0a0d14; --surface:#111722; --surface2:#181f2e; --line:#232c3f;
+  --fg:#eef2f8; --muted:#96a2b8; --gold:#f5b93a; --gold-hi:#ffd56b; --gold-ink:#1d1400;
+  --good:#3ecf8e; --bad:#f2646f; --warn:#e9b94b; --info:#4f9eff;
+  --shadow:0 10px 30px rgba(0,0,0,.4);
+  --f-head:'Space Grotesk','Hind Siliguri',system-ui,sans-serif;
+  --f-body:'Inter','Hind Siliguri',system-ui,sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#f3f5fa; --surface:#ffffff; --surface2:#f5f7fc; --line:#e1e6f0;
+  --fg:#0f141e; --muted:#586379; --gold:#b87200; --gold-hi:#f5b93a; --gold-ink:#1d1400;
+  --good:#0e8a5c; --bad:#c9323f; --warn:#946600; --info:#2563eb;
+  --shadow:0 10px 30px rgba(20,30,60,.10); color-scheme:light}}
+:root[data-theme="light"]{--bg:#f3f5fa;--surface:#ffffff;--surface2:#f5f7fc;--line:#e1e6f0;--fg:#0f141e;--muted:#586379;--gold:#b87200;--gold-hi:#f5b93a;--gold-ink:#1d1400;--good:#0e8a5c;--bad:#c9323f;--warn:#946600;--info:#2563eb;--shadow:0 10px 30px rgba(20,30,60,.10);color-scheme:light}
+:root[data-theme="dark"]{--bg:#0a0d14;--surface:#111722;--surface2:#181f2e;--line:#232c3f;--fg:#eef2f8;--muted:#96a2b8;--gold:#f5b93a;--gold-hi:#ffd56b;--gold-ink:#1d1400;--good:#3ecf8e;--bad:#f2646f;--warn:#e9b94b;--info:#4f9eff;--shadow:0 10px 30px rgba(0,0,0,.4);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:auto}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+h1,h2,h3{font-family:var(--f-head);margin:0;line-height:1.2;text-wrap:balance}
+h2{font-size:1.05rem;font-weight:600} h3{font-size:.95rem;font-weight:600}
+p{margin:0} a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-family:var(--f-head);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .small{font-size:.82rem}
+.good{color:var(--good)} .bad{color:var(--bad)} .warn{color:var(--warn)} .gold{color:var(--gold)} .info{color:var(--info)}
+.wrap{max-width:1120px;margin:0 auto}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.bar{display:flex;align-items:center;gap:12px;padding:10px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-head);font-weight:700;font-size:1.15rem}
+.brand svg{width:36px;height:36px;flex:none;filter:drop-shadow(0 3px 8px rgba(245,185,58,.35))}
+.badge{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--gold)}
+.badge.gold{border-color:var(--gold);color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}
+.flagchip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:.82rem;font-weight:600}
+.grow{flex:1 1 auto}
+.ibtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.ibtn:hover{border-color:var(--gold)}
+.ibtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.tabs a{padding:8px 14px;border-radius:10px;white-space:nowrap;color:var(--muted);font-weight:500;font-size:.92rem}
+.tabs a:hover{color:var(--fg)}
+.tabs a.on{background:var(--gold);color:var(--gold-ink);font-weight:600}
+.tabs a.admin-tab{color:var(--warn)}
+.tabs a.admin-tab.on{background:var(--warn);color:#1d1400}
+
+main{padding-top:20px;display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}
+.card.flat{background:var(--surface2)}
+.card header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr))}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.stat .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat .v{font-family:var(--f-head);font-size:1.25rem;font-weight:600;margin-top:4px;overflow-wrap:anywhere}
+.stat .sub{font-size:.72rem;color:var(--muted);margin-top:2px;font-family:var(--f-head)}
+
+.hero{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;
+  background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--gold) 16%,var(--surface)) 0%,var(--surface) 55%);}
+.coinwrap{width:130px;height:130px;position:relative}
+.coinwrap svg{width:100%;height:100%;filter:drop-shadow(0 12px 22px rgba(245,185,58,.4));animation:float 6s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.bal-dual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.bal-box{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.bal-box.real{border-color:color-mix(in srgb,var(--info) 40%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--info) 8%,var(--surface2)),var(--surface2))}
+.bal-box.held{border-color:color-mix(in srgb,var(--gold) 40%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 10%,var(--surface2)),var(--surface2))}
+.bal-box .lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;display:flex;align-items:center;gap:4px}
+.bal-box .lbl i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.bal-box.real .lbl i{background:var(--info)}
+.bal-box.held .lbl i{background:var(--gold)}
+.bal-box .val{font-family:var(--f-head);font-weight:700;font-size:1.35rem;margin-top:4px;overflow-wrap:anywhere}
+.bal-box .sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+.uid-banner{background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 18%,var(--surface)),var(--surface) 65%);border:1.5px solid color-mix(in srgb,var(--gold) 55%,var(--line));border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.uid-banner .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.uid-banner .id{font-family:var(--f-head);font-size:1.7rem;font-weight:800;letter-spacing:.12em;margin-top:4px;color:var(--gold)}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sp{justify-content:space-between}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:500;min-height:40px;transition:.15s}
+.btn:hover{border-color:var(--gold)}
+.btn.pri{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);border-color:transparent;font-weight:600}
+.btn.pri:hover{filter:brightness(1.06)}
+.btn.buy{background:linear-gradient(180deg,#3ecf8e,#0e8a5c);color:#fff;border-color:transparent;font-weight:600}
+.btn.sell{background:linear-gradient(180deg,#f2646f,#c9323f);color:#fff;border-color:transparent;font-weight:600}
+.btn.tg{background:linear-gradient(180deg,#2ab8e8,#1d8fc0);color:#fff;border-color:transparent;font-weight:600}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:5px 10px;min-height:32px;font-size:.84rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+label.f{display:grid;gap:6px;font-size:.82rem;color:var(--muted);font-weight:500}
+.in{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:0;color:var(--fg);min-width:0}
+.in:focus{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 15%,transparent)}
+textarea.in{resize:vertical;min-height:84px}
+.form{display:grid;gap:12px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{border:1px solid var(--line);background:var(--surface2);border-radius:99px;padding:5px 12px;font-size:.82rem;cursor:pointer;transition:.15s}
+.pill:hover,.pill.on{border-color:var(--gold);color:var(--gold)}
+.pill.on{background:color-mix(in srgb,var(--gold) 14%,transparent);font-weight:600}
+.tag{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}
+.tag.gold{color:var(--gold)} .tag.good{color:var(--good)} .tag.bad{color:var(--bad)} .tag.warn{color:var(--warn)} .tag.info{color:var(--info)}
+.kv{display:grid;gap:6px;font-size:.9rem}
+.kv div{display:flex;justify-content:space-between;gap:12px}
+.kv span:first-child{color:var(--muted)}
+.list{display:grid;gap:8px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);min-width:0}
+.item>div{min-width:0}
+.item .t{overflow-wrap:anywhere}
+.bar2{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;display:flex}
+.bar2 i{display:block;height:100%}
+.supplybar{height:10px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.supplybar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-hi),var(--gold));transition:width .6s;border-radius:99px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--surface2)}
+tr.highlight td{background:color-mix(in srgb,var(--gold) 10%,transparent);font-weight:700}
+tr.highlight td:first-child{color:var(--gold)}
+.chart{width:100%;height:auto;display:block;touch-action:pan-y}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--f-head)}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .ln{fill:none;stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round}
+.chart .ar{fill:url(#cg)}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-head);font-weight:700;color:#fff;flex:none}
+details{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--surface2)}
+details summary{cursor:pointer;font-weight:500}
+details p{margin-top:8px;color:var(--muted);font-size:.9rem}
+.mback{position:fixed;inset:0;z-index:80;background:rgba(5,8,14,.68);display:grid;place-items:center;padding:16px;overflow-y:auto;backdrop-filter:blur(3px)}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;width:min(560px,100%);box-shadow:var(--shadow);max-height:calc(100dvh - 32px);overflow-y:auto}
+.modal h2{font-size:1.15rem;margin-bottom:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:90;background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:500;box-shadow:var(--shadow);max-width:calc(100vw - 32px)}
+.qr{background:#fff;padding:12px;border-radius:12px;display:inline-block}
+.qr img,.qr canvas{display:block}
+
+.method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px}
+.method{border:2px solid var(--line);border-radius:14px;padding:16px;background:var(--surface2);cursor:pointer;transition:.15s;display:grid;gap:8px}
+.method:hover{border-color:var(--gold);transform:translateY(-2px)}
+.method.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 8%,var(--surface2))}
+.method .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--surface);border:1px solid var(--line)}
+.method .name{font-weight:700;font-size:.95rem}
+.method .desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+
+.binance-hero{background:linear-gradient(135deg,#f3ba2f18,#f3ba2f05);border:1.5px solid #f3ba2f60;border-radius:14px;padding:16px;margin-bottom:12px}
+.binance-hero .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
+.binance-hero .lbl span{background:#f3ba2f;color:#1a1200;padding:1px 6px;border-radius:5px;font-size:.65rem}
+.binance-hero .id{font-family:var(--f-head);font-size:2rem;font-weight:800;letter-spacing:.08em;margin:8px 0;color:#f3ba2f}
+
+.pending-badge{background:var(--warn);color:#1d1400;font-weight:700;font-size:.68rem;padding:2px 7px;border-radius:99px;letter-spacing:.02em}
+
+.auth-screen{min-height:calc(100dvh - 40px);display:grid;place-items:center;padding:30px 0}
+.auth-box{max-width:460px;width:100%;display:grid;gap:18px;justify-items:center}
+.auth-box svg.big{width:140px;height:140px;filter:drop-shadow(0 16px 28px rgba(245,185,58,.45));animation:float 6s ease-in-out infinite}
+.auth-title{text-align:center;font-size:2rem;font-weight:700;letter-spacing:-.02em}
+.auth-sub{text-align:center;font-size:.82rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.notice{border:1px solid color-mix(in srgb,var(--warn) 50%,var(--line));background:color-mix(in srgb,var(--warn) 9%,transparent);border-radius:12px;padding:10px 14px;font-size:.86rem;line-height:1.6}
+.notice.info{border-color:color-mix(in srgb,var(--info) 50%,var(--line));background:color-mix(in srgb,var(--info) 8%,transparent)}
+.notice.good{border-color:color-mix(in srgb,var(--good) 50%,var(--line));background:color-mix(in srgb,var(--good) 8%,transparent)}
+
+.tg-help{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#2ab8e8,#1d8fc0);color:#fff;border:none;border-radius:99px;padding:12px 18px;font-weight:600;font-size:.9rem;cursor:pointer;box-shadow:0 12px 30px -8px rgba(42,184,232,.6);transition:.2s;text-decoration:none}
+.tg-help:hover{transform:translateY(-2px);box-shadow:0 16px 36px -8px rgba(42,184,232,.8)}
+.tg-help svg{width:20px;height:20px;fill:#fff}
+
+@media (max-width:620px){
+  .hero{grid-template-columns:1fr;justify-items:start}
+  .coinwrap{width:100px;height:100px}
+  .bal-dual{width:100%}
+  .tg-help span{display:none}
+  .tg-help{padding:14px;border-radius:50%}
+  .uid-banner .id{font-size:1.4rem}
+}
+@media (prefers-reduced-motion:reduce){.coinwrap svg,.auth-box svg.big{animation:none}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff5c8"/><stop offset=".35" stop-color="#f5c648"/>
+      <stop offset=".7" stop-color="#c98a00"/><stop offset="1" stop-color="#8a5c00"/>
+    </linearGradient>
+    <radialGradient id="gFace" cx=".35" cy=".3" r=".85">
+      <stop offset="0" stop-color="#ffe98a"/><stop offset=".5" stop-color="#f5b93a"/><stop offset="1" stop-color="#c47c00"/>
+    </radialGradient>
+    <linearGradient id="gInk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5c3c00"/><stop offset="1" stop-color="#3d2600"/>
+    </linearGradient>
+    <linearGradient id="gShine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".85"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <symbol id="kct-coin" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="97" fill="url(#gRim)"/>
+      <circle cx="100" cy="100" r="97" fill="none" stroke="#7a5000" stroke-opacity=".4" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="86" fill="url(#gFace)"/>
+      <circle cx="100" cy="100" r="86" fill="none" stroke="#7a5000" stroke-opacity=".55" stroke-width="1.8"/>
+      <circle cx="100" cy="100" r="77" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="2.4" stroke-dasharray="2 7" stroke-linecap="round"/>
+      <rect x="72" y="66" width="56" height="4" rx="2" fill="url(#gInk)" opacity=".55"/>
+      <rect x="78" y="130" width="44" height="4" rx="2" fill="url(#gInk)" opacity=".55"/>
+      <text x="100" y="118" text-anchor="middle" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-weight="800" font-size="54" fill="url(#gInk)" letter-spacing="2">KCT</text>
+      <path d="M42 68 A66 66 0 0 1 100 34" fill="none" stroke="url(#gShine)" stroke-width="5" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap"><div id="app"></div></div>
+<div id="modalroot"></div>
+<div id="toastroot"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   PRICING MODEL
+   ------------------------------------------------------------
+   Coin #1  → +0.001%   (price × 1.00001)
+   Coin #2  → +0.002%
+   ...
+   Coin #10 → +0.010%
+   ...
+   Coin #100 → +0.100%  (price × 1.001)
+   Coin #101 and beyond → +৳1 per coin (linear)
+   
+   Starting price ৳10  →  after 100 coins ≈ ৳10.52  →  after 250,000 ≈ ৳249,910
+   ============================================================ */
+const TOTAL_SUPPLY   = 250000;
+const BDT_PER_USD    = 122;
+const BASE_PRICE     = 10;
+const GROWTH_CAP     = 100;
+const PER_COIN_UNIT  = 0.00001;
+const FIXED_AFTER    = 1;
+
+// Precompute price & cumulative cost arrays
+const PRICES  = new Float64Array(TOTAL_SUPPLY + 1);
+const CUMCOST = new Float64Array(TOTAL_SUPPLY + 1);
+PRICES[0]  = BASE_PRICE;
+CUMCOST[0] = 0;
+for (let i = 1; i <= TOTAL_SUPPLY; i++) {
+  CUMCOST[i] = CUMCOST[i-1] + PRICES[i-1];
+  if (i <= GROWTH_CAP) {
+    PRICES[i] = PRICES[i-1] * (1 + i * PER_COIN_UNIT);
+  } else {
+    PRICES[i] = PRICES[i-1] + FIXED_AFTER;
+  }
+}
+
+function priceBdt(sold){
+  if (sold <= 0) return BASE_PRICE;
+  if (sold >= TOTAL_SUPPLY) return PRICES[TOTAL_SUPPLY];
+  const i = Math.floor(sold), fr = sold - i;
+  return PRICES[i] * (1 - fr) + PRICES[i+1] * fr;
+}
+function priceUsd(sold){ return priceBdt(sold) / BDT_PER_USD; }
+function cumCost(sold){
+  if (sold <= 0) return 0;
+  if (sold >= TOTAL_SUPPLY) return CUMCOST[TOTAL_SUPPLY];
+  const i = Math.floor(sold), fr = sold - i;
+  return CUMCOST[i] + PRICES[i] * fr;
+}
+function costOf(utc, sold){ return cumCost(sold + utc) - cumCost(sold); }
+function solveBuy(bdt, sold){
+  if (bdt <= 0) return 0;
+  const start = cumCost(sold);
+  let lo = 0, hi = TOTAL_SUPPLY - sold;
+  for (let it = 0; it < 70; it++){
+    const mid = (lo + hi) / 2;
+    if (cumCost(sold + mid) - start <= bdt) lo = mid; else hi = mid;
+    if (hi - lo < 1e-9) break;
+  }
+  return lo;
+}
+function solveSell(utc, sold){
+  if (utc <= 0) return 0;
+  return cumCost(sold) - cumCost(Math.max(0, sold - utc));
+}
+
+const STARTING_BDT = 0;
+const FEE_RATE = 0.001, MIN_FEE = 0.01;
+const KEY = 'kct-coin-v7';
+
+const BKASH_NUMBER          = '01316344463';
+const BINANCE_ID            = '976102094';
+const BINANCE_REGISTER_URL  = 'https://account.binance.com/register?ref=976102094&?registerChannel=user_center';
+const BINANCE_NETWORK       = 'Binance Pay';
+const TELEGRAM_URL          = 'https://t.me/+8801316344463';
+const ADMIN_PASSWORD        = 'UMAYER12';
+
+const COUNTRIES = {
+  BD:{flag:'🇧🇩',name:'বাংলাদেশ'}, IN:{flag:'🇮🇳',name:'ভারত'},
+  PK:{flag:'🇵🇰',name:'পাকিস্তান'}, NP:{flag:'🇳🇵',name:'নেপাল'},
+  LK:{flag:'🇱🇰',name:'শ্রীলঙ্কা'}, MY:{flag:'🇲🇾',name:'মালয়েশিয়া'},
+  AE:{flag:'🇦🇪',name:'আমিরাত'}, SA:{flag:'🇸🇦',name:'সৌদি আরব'},
+  US:{flag:'🇺🇸',name:'যুক্তরাষ্ট্র'}, GB:{flag:'🇬🇧',name:'যুক্তরাজ্য'},
+  OT:{flag:'🌍',name:'অন্যান্য'}
+};
+
+/* ============ HELPERS ============ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f=(n,d=2)=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const r2=x=>Math.round(x*100)/100;
+function hs(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function txid(){const ch='0123456789abcdef';let s='0x';for(let i=0;i<40;i++)s+=ch[Math.floor(Math.random()*16)];return s}
+function depId(){return 'DEP-'+Math.random().toString(36).slice(2,8).toUpperCase()}
+const short=a=>a&&a.length>18?a.slice(0,9)+'…'+a.slice(-6):a;
+const NOW=()=>Date.now(), DAY=864e5;
+function hashPw(pw){let h=5381;for(let i=0;i<pw.length;i++)h=((h<<5)+h+pw.charCodeAt(i))|0;return'h'+Math.abs(h).toString(36)+'_'+pw.length}
+
+function shortBdt(n){
+  n=Number(n)||0;
+  const abs=Math.abs(n);
+  if(abs>=1e7) return '৳'+(n/1e6).toFixed(1)+'M';
+  if(abs>=1e6) return '৳'+(n/1e6).toFixed(2)+'M';
+  if(abs>=1e4) return '৳'+(n/1e3).toFixed(0)+'K';
+  if(abs>=1e3) return '৳'+(n/1e3).toFixed(1)+'K';
+  if(abs>=100) return '৳'+n.toFixed(2);
+  if(abs>=1)   return '৳'+(+n.toFixed(4));
+  return '৳'+(+n.toFixed(6));
+}
+function shortUsd(n){
+  n=Number(n)||0;
+  const abs=Math.abs(n);
+  if(abs>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+  if(abs>=1e3) return '$'+(n/1e3).toFixed(2)+'K';
+  if(abs>=1)   return '$'+(+n.toFixed(4));
+  return '$'+(+n.toFixed(6));
+}
+function fmtChg(c){
+  const s=c>=0?'+':'';
+  if(Math.abs(c)>=10000) return s+(c/1000).toFixed(1)+'K%';
+  if(Math.abs(c)>=1000) return s+c.toFixed(0)+'%';
+  if(Math.abs(c)>=1) return s+c.toFixed(2)+'%';
+  return s+c.toFixed(4)+'%';
+}
+
+/* ============ STATE ============ */
+function seedStore(){
+  return {
+    lang:'bn', theme:'auto', sound:true, admin:false,
+    session:null, users:[],
+    settings:{
+      maintenance:false,
+      depositsEnabled:true,
+      binanceEnabled:true,
+      bkashEnabled:true,
+      minDeposit:100,
+      maxDeposit:500000,
+      notice:'',
+      revealSupply:false
+    },
+    market:{
+      soldSupply:0, burned:0,
+      priceHistory:[{t:NOW()-7*DAY, p:BASE_PRICE}]
+    }
+  };
+}
+let store;
+try{store=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){store=null}
+if(!store||!store.users||!store.settings)store=seedStore();
+if(store.settings && store.settings.revealSupply === undefined) store.settings.revealSupply = false;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
+function S(){return store.users.find(u=>u.phone===store.session)||null}
+const b=(bn,en)=>store.lang==='en'?en:bn;
+function isBdUser(){const a=S();return a&&a.country==='BD'}
+function isAdmin(){return !!store.admin}
+function supplyVisible(){ return isAdmin() || !!store.settings.revealSupply; }
+
+function genUid(){
+  let id;
+  do{id=String(Math.floor(1000000000+Math.random()*9000000000));}
+  while(store.users.some(u=>u.uid===id));
+  return id;
+}
+(function(){
+  let m=false;
+  store.users.forEach(u=>{
+    if(!u.uid){u.uid=genUid();m=true;}
+    if(u.totalBought===undefined){u.totalBought=0;m=true;}
+  });
+  if(m)save();
+})();
+
+/* ============ FORMAT ============ */
+const when=ts=>new Date(ts).toLocaleString(store.lang==='en'?'en-GB':'bn-BD',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+function tier(){
+  const a=S();if(!a)return['Bronze','#c9814a'];
+  const v=a.heldCoins*priceBdt(store.market.soldSupply);
+  return v>=500000?['Platinum','#9fb4d6']:v>=100000?['Gold','#f5b93a']:v>=20000?['Silver','#b8c0cc']:['Bronze','#c9814a']
+}
+const COLORS=['linear-gradient(135deg,#f5b93a,#c26b00)','linear-gradient(135deg,#4f9eff,#2a56c6)','linear-gradient(135deg,#3ecf8e,#0e8a5c)','linear-gradient(135deg,#b06bff,#6a35c9)','linear-gradient(135deg,#f2646f,#b8323d)','linear-gradient(135deg,#31c5d6,#1a7f8e)'];
+const avatar=(a,sz)=>`<div class="avatar" style="background:${COLORS[(a.color||0)%6]};${sz?`width:${sz}px;height:${sz}px`:''}">${esc((a.nick||'U').replace('@','').charAt(0).toUpperCase())}</div>`;
+const coin=(cls)=>`<svg class="${cls||''}" viewBox="0 0 200 200" aria-hidden="true"><use href="#kct-coin"/></svg>`;
+const icon=p=>`<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const IC={
+  sun:icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  globe:icon('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>'),
+  out:icon('<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>'),
+  copy:icon('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>'),
+  lock:icon('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+  trophy:icon('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 4h3v3a3 3 0 0 1-3 3M7 4H4v3a3 3 0 0 0 3 3"/>')
+};
+
+/* ============ TOAST/MODAL ============ */
+let toastT;
+function toast(m){const r=$('#toastroot');r.innerHTML=`<div class="toast" role="status">${esc(m)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>r.innerHTML='',2800)}
+function beep(){if(!store.sound)return;try{const A=window.AudioContext||window.webkitAudioContext;const c=new A(),o=c.createOscillator(),g=c.createGain();o.frequency.value=880;g.gain.value=.05;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.12)}catch(e){}try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}}
+function modal(title,html,mount){$('#modalroot').innerHTML=`<div class="mback" data-act="mclose-bg"><div class="modal" role="dialog" aria-modal="true"><h2>${esc(title)}</h2>${html}</div></div>`;if(mount)mount($('#modalroot'))}
+const closeModal=()=>{$('#modalroot').innerHTML=''};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+async function copyText(txt,msg){
+  try{await navigator.clipboard.writeText(txt);toast(msg||b('কপি হয়েছে','Copied'))}
+  catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast(msg||b('কপি হয়েছে','Copied'))}catch(_){}ta.remove()}
+}
+function qr(el,text){el.innerHTML='';try{new QRCode(el,{text,width:176,height:176,colorDark:'#0a0d14',colorLight:'#ffffff'})}catch(e){el.textContent=text}}
+
+/* ============ CHART ============ */
+const TFS=['1H','24H','7D','1M','ALL'];
+let tf='24H';
+function series(tfKey){
+  const hist=store.market.priceHistory;
+  const N={'1H':40,'24H':60,'7D':70,'1M':80,'ALL':100}[tfKey]||60;
+  const span={'1H':36e5,'24H':DAY,'7D':7*DAY,'1M':30*DAY,'ALL':Math.max(DAY,(hist[hist.length-1].t-hist[0].t))}[tfKey]||DAY;
+  const now=NOW(),start=now-span,pts=[];
+  let last=hist[0].p;
+  for(let i=0;i<N;i++){
+    const t=start+(span*i)/(N-1);let v=last;
+    for(let j=0;j<hist.length;j++){
+      if(hist[j].t<=t){v=hist[j].p}
+      else{const prev=hist[j-1];const f2=(t-prev.t)/(hist[j].t-prev.t||1);v=prev.p+(hist[j].p-prev.p)*f2;break}
+    }
+    pts.push({t,p:v});
+  }
+  if(pts.length)pts[pts.length-1].p=priceBdt(store.market.soldSupply);
+  return pts;
+}
+function drawChart(){
+  const el=$('#chart');if(!el)return;
+  const d=series(tf).map(x=>x.p),W=640,H=240,pl=72,pr=12,pt=12,pb=26;
+  const mn=Math.min(...d),mx=Math.max(...d);
+  const pad=(mx-mn)*.12 || Math.max(0.0001, mn*0.0001);
+  const lo=mn-pad, hi=mx+pad;
+  const X=i=>pl+i*(W-pl-pr)/(d.length-1),Y=v=>pt+(hi-v)/(hi-lo)*(H-pt-pb);
+  let line='',area='';
+  d.forEach((v,i)=>{line+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)});
+  area=line+`L${X(d.length-1)} ${H-pb}L${X(0)} ${H-pb}Z`;
+  let grid='';
+  for(let i=0;i<4;i++){const v=lo+(hi-lo)*i/3,y=Y(v);grid+=`<line class="gl" x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}"/><text x="${pl-6}" y="${y+4}" text-anchor="end">${shortBdt(v)}</text>`}
+  const lab={'1H':['-60m','-45m','-30m','-15m','now'],'24H':['-24h','-18h','-12h','-6h','now'],'7D':['-7d','-5d','-3d','-1d','now'],'1M':['-30d','-22d','-15d','-7d','now'],'ALL':['Start','','','','now']}[tf];
+  let xl='';
+  lab.forEach((t,i)=>{xl+=`<text x="${pl+i*(W-pl-pr)/4}" y="${H-6}" text-anchor="${i==0?'start':i==4?'end':'middle'}">${t}</text>`});
+  el.innerHTML=`<defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--gold)" stop-opacity=".35"/><stop offset="1" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs>${grid}${xl}<path class="ar" d="${area}"/><path class="ln" d="${line}"/><g id="tip" style="display:none"><line id="tl" class="gl" y1="${pt}" y2="${H-pb}" style="stroke:var(--gold)"/><circle id="tc" r="4" style="fill:var(--gold)"/><text id="tt" text-anchor="middle"></text></g>`;
+  el.onpointermove=e=>{
+    const rc=el.getBoundingClientRect(),x=(e.clientX-rc.left)/rc.width*W;
+    const i=Math.max(0,Math.min(d.length-1,Math.round((x-pl)/((W-pl-pr)/(d.length-1)))));
+    const g=$('#tip',el);g.style.display='';$('#tl',el).setAttribute('x1',X(i));$('#tl',el).setAttribute('x2',X(i));
+    $('#tc',el).setAttribute('cx',X(i));$('#tc',el).setAttribute('cy',Y(d[i]));
+    const tt=$('#tt',el);tt.setAttribute('x',Math.min(W-50,Math.max(pl+30,X(i))));tt.setAttribute('y',Math.max(pt+10,Y(d[i])-10));tt.textContent=shortBdt(d[i]);
+  };
+  el.onpointerleave=()=>{const g=$('#tip',el);if(g)g.style.display='none'};
+}
+
+/* ============ LIVE VALUES ============ */
+function change24(){
+  const hist=store.market.priceHistory,cut=NOW()-DAY;
+  let old=BASE_PRICE;
+  for(const h of hist){if(h.t<=cut)old=h.p;else break}
+  const p=priceBdt(store.market.soldSupply);
+  return (p-old)/old*100;
+}
+function liveVals(){
+  const P=priceBdt(store.market.soldSupply);
+  const U=priceUsd(store.market.soldSupply);
+  const c=change24();
+  $$('[data-live="price"]').forEach(e=>e.textContent=shortBdt(P));
+  $$('[data-live="price-usd"]').forEach(e=>e.textContent='$'+U.toFixed(6));
+  $$('[data-live="price-usd-mid"]').forEach(e=>e.textContent=U.toFixed(6));
+  $$('[data-live="chg"]').forEach(e=>{e.textContent=fmtChg(c);e.className='num '+(c>=0?'good':'bad')});
+  $$('[data-live="sold"]').forEach(e=>e.textContent=f(store.market.soldSupply,2));
+  $$('[data-live="remain"]').forEach(e=>e.textContent=f(TOTAL_SUPPLY-store.market.soldSupply,0));
+  $$('[data-live="supply-pct"]').forEach(e=>e.textContent=(store.market.soldSupply/TOTAL_SUPPLY*100).toFixed(2)+'%');
+  $$('[data-live="supply-fill"]').forEach(e=>e.style.width=(store.market.soldSupply/TOTAL_SUPPLY*100)+'%');
+  if(!S())return;
+  const a=S();
+  $$('[data-live="real"]').forEach(e=>e.textContent='৳'+f(a.realBalance));
+  $$('[data-live="real-usd"]').forEach(e=>e.textContent=shortUsd(a.realBalance/BDT_PER_USD));
+  $$('[data-live="held"]').forEach(e=>e.textContent=f(a.heldCoins)+' KCT');
+  $$('[data-live="held-val"]').forEach(e=>e.textContent=shortBdt(a.heldCoins*P));
+  $$('[data-live="held-usd"]').forEach(e=>e.textContent=shortUsd(a.heldCoins*U));
+  const totBdt=a.realBalance+a.heldCoins*P;
+  $$('[data-live="total"]').forEach(e=>e.textContent=shortBdt(totBdt));
+  $$('[data-live="total-usd"]').forEach(e=>e.textContent=shortUsd(totBdt/BDT_PER_USD));
+}
+
+/* ============ VIEWS ============ */
+const NAMES={home:['ওভারভিউ','Overview'],wallet:['ওয়ালেট','Wallet'],deposit:['ব্যালেন্স অ্যাড','Add Balance'],market:['মার্কেট','Market'],leaderboard:['লিডারবোর্ড','Leaderboard'],activity:['হিস্টোরি','History'],account:['সেটিংস','Settings'],admin:['অ্যাডমিন','Admin']};
+const ROUTES=['home','wallet','deposit','market','leaderboard','activity','account','admin'];
+const route=()=>{const h=location.hash.replace('#','');return ROUTES.includes(h)&&(h!=='admin'||isAdmin())?h:'home'};
+
+function statCard(k,v,sub,live){
+  return `<div class="stat">
+    <div class="k">${k}</div>
+    <div class="v num" ${live?`data-live="${live}"`:''}>${v}</div>
+    ${sub?`<div class="sub">${sub}</div>`:''}
+  </div>`;
+}
+
+const TXT={sent:['পাঠানো','Sent'],received:['প্রাপ্ত','Received'],reward:['রিওয়ার্ড','Reward'],buy:['কেনা','Buy'],sell:['বিক্রি','Sell'],stake:['স্টেক','Stake'],deposit:['ডিপোজিট','Deposit'],withdraw:['উইথড্র','Withdraw']};
+const txType=t=>b((TXT[t]||TXT.sent)[0],(TXT[t]||TXT.sent)[1]);
+const stCls=s=>s==='Completed'?'good':s==='Pending'?'warn':'bad';
+const stTxt=s=>s==='Completed'?b('সম্পন্ন','Completed'):s==='Pending'?b('পেন্ডিং','Pending'):s==='Rejected'?b('বাতিল','Rejected'):b('ব্যর্থ','Failed');
+const credit=t=>t.type==='received'||t.type==='reward'||t.type==='buy'||t.type==='deposit'||(t.type==='stake'&&t.amt>0);
+
+function txRow(t){
+  const pos=credit(t);
+  let amtTxt;
+  if(t.type==='buy')amtTxt=`+${f(t.utc)} KCT`;
+  else if(t.type==='sell')amtTxt=`+৳${f(t.bdt)}`;
+  else if(t.type==='deposit')amtTxt=`+৳${f(t.bdt)}`;
+  else if(t.type==='withdraw')amtTxt=`−৳${f(t.bdt)}`;
+  else amtTxt=`${pos?'+':'−'}${f(Math.abs(t.amt))}`;
+  return `<div class="item" data-act="txd" data-id="${t.id}" style="cursor:pointer">
+    <div><div class="t"><strong>${txType(t.type)}</strong> <span class="tag ${stCls(t.status)}">${stTxt(t.status)}</span></div>
+    <div class="small muted">${esc(short(t.who||'-'))} · ${when(t.ts)}</div></div>
+    <div class="num ${pos?'good':''}" style="white-space:nowrap">${amtTxt}</div></div>`;
+}
+
+/* ---------- LEADERBOARD ---------- */
+function topBuyers(limit){
+  return store.users
+    .filter(u=>u.totalBought>0)
+    .sort((a,b)=>(b.totalBought||0)-(a.totalBought||0))
+    .slice(0, limit || 100);
+}
+function leaderboardRows(buyers){
+  if(!buyers.length) return `<p class="muted" style="padding:16px 0;text-align:center">${b('এখনো কোনো ক্রেতা নেই','No buyers yet')}</p>`;
+  return buyers.map((u,i)=>{
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+    return `<div class="item" style="padding:10px 14px">
+      <div class="row" style="min-width:0">
+        <span style="width:32px;text-align:center;font-weight:800;font-family:var(--f-head);color:${i<3?'var(--gold)':'var(--muted)'};font-size:${i<3?'1.1rem':'.92rem'}">${medal}</span>
+        <div style="min-width:0">
+          <div class="t" style="font-weight:600">${esc(u.nick||u.name||'User')}</div>
+          <div class="small muted">${(COUNTRIES[u.country]||COUNTRIES.OT).flag} ${esc((COUNTRIES[u.country]||COUNTRIES.OT).name)}</div>
+        </div>
+      </div>
+      <div class="num" style="font-weight:700;color:var(--gold)">${f(u.totalBought,2)} <span class="small muted">KCT</span></div>
+    </div>`;
+  }).join('');
+}
+function vLeaderboard(){
+  const buyers=topBuyers(100);
+  return `<section class="card">
+    <header><h2>🏆 ${b('টপ ১০০ ক্রেতা','Top 100 Buyers')}</h2><span class="small muted">${b('মোট কেনা কয়েন','Total coins bought')}</span></header>
+    <p class="small muted" style="margin-bottom:12px">${b('যারা সব থেকে বেশি KCT কিনেছেন তাদের তালিকা। শুধু টপ ১০০ জন দেখানো হচ্ছে।','Ranking of the biggest KCT buyers. Only top 100 are shown.')}</p>
+    <div class="list">${leaderboardRows(buyers)}</div>
+  </section>`;
+}
+function openLeaderboardModal(){
+  const buyers=topBuyers(100);
+  modal(b('টপ ১০০ ক্রেতা','Top 100 Buyers'),
+    `<div class="list" style="max-height:60vh;overflow-y:auto">${leaderboardRows(buyers)}</div>
+     <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div>`);
+}
+
+/* ---------- HOME ---------- */
+function vHome(){
+  const a=S(),P=priceBdt(store.market.soldSupply),U=priceUsd(store.market.soldSupply),pk=tier();
+  const recent=a.tx.slice().sort((x,y)=>y.ts-x.ts).slice(0,5);
+  const pendingDeps=(a.deposits||[]).filter(d=>d.status==='Pending').length;
+  const totBdt=a.realBalance+a.heldCoins*P;
+  const top5=topBuyers(5);
+  const showSupply=supplyVisible();
+  return `
+  <section class="card hero">
+    <div class="coinwrap">${coin()}</div>
+    <div style="min-width:0;width:100%">
+      <div class="eyebrow">${b('আপনার KCT অ্যাকাউন্ট','Your KCT Account')} · <span style="color:${pk[1]}">${pk[0]}</span></div>
+      <div class="bal-dual">
+        <div class="bal-box real">
+          <div class="lbl"><i></i>${b('আসল ব্যালেন্স','Real Balance')}</div>
+          <div class="val num" data-live="real">৳${f(a.realBalance)}</div>
+          <div class="sub"><span data-live="real-usd">$0.00</span></div>
+        </div>
+        <div class="bal-box held">
+          <div class="lbl"><i></i>${b('হোল্ড করা কয়েন','Held Coins')}</div>
+          <div class="val num" data-live="held">${f(a.heldCoins)} KCT</div>
+          <div class="sub">≈ <span data-live="held-val">৳0</span> · <span data-live="held-usd">$0.00</span></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <a class="btn pri" href="#deposit">${b('+ ব্যালেন্স অ্যাড','+ Add Balance')}</a>
+        <a class="btn buy" href="#market">${b('কিনুন','Buy KCT')}</a>
+        <a class="btn sell" href="#market">${b('বিক্রি','Sell KCT')}</a>
+        <a class="btn" href="#wallet">${b('পাঠান','Send')}</a>
+      </div>
+      ${pendingDeps?`<div class="notice info" style="margin-top:12px">⏳ ${b('আপনার','You have')} ${pendingDeps} ${b('টি ডিপোজিট অনুমোদনের অপেক্ষায়।','deposit(s) pending approval.')}</div>`:''}
+    </div>
+  </section>
+  ${store.settings.notice?`<div class="notice info">📢 ${esc(store.settings.notice)}</div>`:''}
+
+  <div class="uid-banner">
+    <div>
+      <div class="lbl">${b('আপনার ইউনিক ১০-ডিজিট ID','Your Unique 10-digit ID')}</div>
+      <div class="id num">${esc(a.uid||'-')}</div>
+    </div>
+    <button class="btn pri" data-act="copyuid">${IC.copy} ${b('কপি','Copy')}</button>
+  </div>
+
+  <section class="stats">
+    ${statCard(b('KCT প্রাইস','KCT Price'),shortBdt(P),'<span data-live="price-usd">$'+U.toFixed(6)+'</span>','price')}
+    ${statCard(b('২৪ঘ.','24h'),'','','chg')}
+    ${statCard(b('আসল ব্যালেন্স','Real Balance'),'৳'+f(a.realBalance),'<span data-live="real-usd">'+shortUsd(a.realBalance/BDT_PER_USD)+'</span>','real')}
+    ${statCard(b('হোল্ড কয়েন','Held Coins'),f(a.heldCoins)+' KCT','<span data-live="held-usd">'+shortUsd(a.heldCoins*U)+'</span>','held')}
+    ${statCard(b('মোট মূল্য','Total Value'),shortBdt(totBdt),'<span data-live="total-usd">'+shortUsd(totBdt/BDT_PER_USD)+'</span>','total')}
+    ${showSupply?statCard(b('বিক্রি','Sold'),'<span data-live="sold">0</span>','<span class="muted">/ 250,000</span>',''):''}
+    ${showSupply?statCard(b('বাকি','Remaining'),f(TOTAL_SUPPLY-store.market.soldSupply,0),'KCT','remain'):''}
+    ${showSupply?statCard(b('সাপ্লাই %','Supply %'),'','','supply-pct'):''}
+  </section>
+
+  <section class="card">
+    <header><h2>${b('KCT প্রাইস চার্ট','KCT Price Chart')}</h2><div class="pills">${TFS.map(x=>`<button class="pill ${x===tf?'on':''}" data-act="tf" data-v="${x}">${x}</button>`).join('')}</div></header>
+    <svg id="chart" class="chart" viewBox="0 0 640 240" role="img"></svg>
+    ${showSupply?`
+      <div class="supplybar" style="margin-top:14px"><i data-live="supply-fill" style="width:${store.market.soldSupply/TOTAL_SUPPLY*100}%"></i></div>
+      <div class="row sp small muted" style="margin-top:6px"><span>${b('বিক্রি','Sold')}: <b class="num" data-live="sold">${f(store.market.soldSupply,2)}</b> / 250,000</span><span data-live="supply-pct">${(store.market.soldSupply/TOTAL_SUPPLY*100).toFixed(2)}%</span></div>
+    `:''}
+  </section>
+
+  <section class="grid g2">
+    <div class="card"><header><h2>🏆 ${b('টপ ক্রেতা','Top Buyers')}</h2><button class="btn sm" data-act="openleaderboard">${b('সব ১০০ দেখুন','View Top 100')}</button></header>
+      <div class="list">${leaderboardRows(top5)}</div>
+    </div>
+    <div class="card"><header><h2>💳 ${b('ব্যালেন্স অ্যাড','Add Balance')}</h2><a class="btn sm" href="#deposit">${b('খুলুন','Open')}</a></header>
+      <div class="list">
+        <a class="item" href="#deposit" style="cursor:pointer">
+          <div><div class="t"><strong>₿ Binance Pay</strong></div><div class="small muted">${b('ID','ID')}: <strong style="color:#f3ba2f">${BINANCE_ID}</strong></div></div>
+          <span class="tag info">${b('ডিপোজিট','Deposit')}</span>
+        </a>
+        ${isBdUser()?`<a class="item" href="#deposit" style="cursor:pointer">
+          <div><div class="t"><strong>৳ bKash / Nagad</strong></div><div class="small muted">${BKASH_NUMBER}</div></div>
+          <span class="tag good">${b('ডিপোজিট','Deposit')}</span>
+        </a>`:''}
+        <a class="item" href="${TELEGRAM_URL}" target="_blank" rel="noopener" style="cursor:pointer">
+          <div><div class="t"><strong>✈️ Telegram Helpline</strong></div><div class="small muted">${b('২৪/৭ সাপোর্ট','24/7 support')}</div></div>
+          <span class="tag info">${b('খুলুন','Open')}</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="card"><header><h2>${b('সাম্প্রতিক','Recent')}</h2><a class="btn sm" href="#activity">${b('সব','View all')}</a></header>
+    <div class="list">${recent.map(txRow).join('')||`<p class="muted">${b('কোনো লেনদেন নেই','No transactions yet')}</p>`}</div></section>`;
+}
+
+/* ---------- DEPOSIT ---------- */
+let depositMethod='binance';
+function vDeposit(){
+  const a=S(),s=store.settings,pending=(a.deposits||[]).filter(d=>d.status==='Pending');
+  if(!isBdUser()&&depositMethod==='bkash')depositMethod='binance';
+  const binHTML=s.binanceEnabled?`
+      <div class="method ${depositMethod==='binance'?'on':''}" data-act="depmethod" data-v="binance">
+        <div class="ic" style="background:#f3ba2f;color:#1a1200">₿</div>
+        <div class="name">Binance Pay</div>
+        <div class="desc">${b('Binance ID','ID')}: <strong style="color:#f3ba2f">${BINANCE_ID}</strong><br>${b('যেকোনো দেশ','Any country')}</div>
+      </div>`:'';
+  const bkHTML=s.bkashEnabled&&isBdUser()?`
+      <div class="method ${depositMethod==='bkash'?'on':''}" data-act="depmethod" data-v="bkash">
+        <div class="ic" style="background:#e2136e;color:#fff">৳</div>
+        <div class="name">bKash / Nagad</div>
+        <div class="desc">${b('শুধু বাংলাদেশ — নম্বর:','Bangladesh only — number:')} ${BKASH_NUMBER}</div>
+      </div>`:'';
+  return `
+  <section class="grid g2">
+    <div class="card form">
+      <header><h2>${b('ব্যালেন্স অ্যাড করুন','Add Balance')}</h2></header>
+      ${!s.depositsEnabled?`<div class="notice">${b('ডিপোজিট সাময়িকভাবে বন্ধ','Deposits temporarily disabled')}</div>`:`
+      <div class="method-grid">${binHTML}${bkHTML}</div>
+      <div style="margin-top:16px">${depositMethod==='binance'?binanceForm():bkashForm()}</div>`}
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card"><header><h2>${b('কীভাবে কাজ করে','How it works')}</h2></header>
+        <div class="list">
+          <div class="item"><div><div class="t"><strong>1. ${b('পেমেন্ট','Send payment')}</strong></div><div class="small muted">${b('Binance ID বা bKash নম্বরে','To Binance ID or bKash number')}</div></div></div>
+          <div class="item"><div><div class="t"><strong>2. ${b('প্রমাণ দিন','Submit proof')}</strong></div><div class="small muted">${b('TxID / TrxID দিন','Provide TxID / TrxID')}</div></div></div>
+          <div class="item"><div><div class="t"><strong>3. ${b('অ্যাডমিন অনুমোদন','Admin approves')}</strong></div><div class="small muted">${b('৫-১৫ মিনিটে','Within 5-15 min')}</div></div></div>
+          <div class="item"><div><div class="t"><strong>4. ${b('KCT কিনুন','Buy KCT')}</strong></div><div class="small muted">${b('মার্কেট থেকে','From market')}</div></div></div>
+        </div></div>
+      <div class="card"><header><h2>${b('পেন্ডিং','Pending')}</h2></header>
+        <div class="list">${pending.length?pending.map(d=>`<div class="item"><div><div class="t"><strong>৳${f(d.bdt)}</strong> · ${d.method==='binance'?'Binance':'bKash'}</div><div class="small muted">${when(d.ts)} · ${esc(d.trxid)}</div></div><span class="tag warn">${b('পেন্ডিং','Pending')}</span></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending deposits')}</p>`}</div>
+      </div>
+    </div>
+  </section>`;
+}
+function binanceForm(){
+  return `<form class="form" id="binanceform">
+    <div class="binance-hero">
+      <div class="lbl">₿ Binance Pay <span>OFFICIAL</span></div>
+      <div class="id num">${BINANCE_ID}</div>
+      <div class="row" style="gap:8px;margin-top:4px">
+        <button type="button" class="btn sm" data-act="copybinid">${b('ID কপি','Copy ID')}</button>
+        <button type="button" class="btn sm" data-act="binqr">${b('QR দেখুন','Show QR')}</button>
+      </div>
+      <p class="small muted" style="margin-top:10px;line-height:1.6">
+        <strong>${b('কীভাবে পেমেন্ট করবেন','How to pay')}:</strong><br>
+        Binance App → <b>Pay</b> → <b>Send</b> → ${b('ID লিখুন','Enter ID')}: <b>${BINANCE_ID}</b> → ${b('পরিমাণ দিন → সেন্ড','enter amount → send')}
+      </p>
+    </div>
+    <div class="notice good" style="font-size:.8rem">
+      ${b('Binance অ্যাকাউন্ট নেই?','No Binance account?')} 
+      <a href="${BINANCE_REGISTER_URL}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:700">${b('রেজিস্টার করুন →','Register here →')}</a>
+    </div>
+    <label class="f">${b('পরিমাণ (BDT সমতুল্য USDT)','Amount (USDT, BDT equivalent)')}
+      <input class="in num" id="bin-amt" type="number" min="1" step="0.01" placeholder="50" required></label>
+    <label class="f">${b('Binance TxID','Binance TxID')}<input class="in" id="bin-trx" placeholder="0x..." required></label>
+    <p class="small bad" id="bin-err"></p>
+    <button class="btn pri" type="submit">${b('ডিপোজিট রিকোয়েস্ট','Request deposit')}</button>
+  </form>`;
+}
+function bkashForm(){
+  return `<form class="form" id="bkashform">
+    <label class="f">${b('পরিমাণ (৳)','Amount (৳)')}
+      <input class="in num" id="bk-amt" type="number" min="100" step="1" placeholder="500" required></label>
+    <div class="notice" style="font-size:.82rem;background:linear-gradient(135deg,#e2136e15,#e2136e05);border-color:#e2136e60">
+      <strong style="color:#e2136e">bKash / Nagad</strong> — ${b('সেন্ড মানি করুন','Send Money to')}<br>
+      <code style="font-size:1.15rem;font-weight:700;letter-spacing:.04em;display:inline-block;margin:4px 0">${BKASH_NUMBER}</code>
+      <button type="button" class="btn sm" style="margin-left:8px" data-act="copybk">${b('কপি','Copy')}</button><br>
+      <span class="small">${b('এই নম্বরটি সেভ করুন — অ্যাডমিন যাচাই করবেন','Save this number — admin will verify')}</span>
+    </div>
+    <label class="f">${b('bKash TrxID','bKash TrxID')}<input class="in" id="bk-trx" placeholder="9A7B2C5D1E" required></label>
+    <p class="small bad" id="bk-err"></p>
+    <button class="btn pri" type="submit">${b('ডিপোজিট রিকোয়েস্ট','Request deposit')}</button>
+  </form>`;
+}
+
+/* ---------- WALLET ---------- */
+function vWallet(){
+  const a=S(),pf=store.prefill||{};store.prefill=null;
+  const recents=[...new Set(a.tx.filter(t=>t.type==='sent').sort((x,y)=>y.ts-x.ts).map(t=>t.who))].slice(0,4);
+  const members=[['@rahim','Rahim'],['@nusrat','Nusrat'],['@karim','Karim'],['@sumi','Sumi']];
+  return `
+  <section class="grid g2">
+    <form class="card form" id="sendform" autocomplete="off">
+      <header><h2>${b('KCT পাঠান','Send KCT')}</h2><span class="small muted">${b('ব্যালেন্স','Balance')}: <b class="num">${f(a.heldCoins)} KCT</b></span></header>
+      <label class="f">${b('প্রাপক (KCT অ্যাড্রেস, @নাম বা ১০-ডিজিট ID)','Recipient (KCT address, @nick or 10-digit ID)')}
+        <input class="in" id="s-to" list="clist" placeholder="KCT1q… / @user / 10-digit ID" value="${esc(pf.to||'')}"></label>
+      <datalist id="clist">${a.contacts.map(c=>`<option value="${esc(c.addr)}">${esc(c.name)}</option>`).join('')}</datalist>
+      <div class="pills">${recents.map(r=>`<button type="button" class="pill" data-act="fillto" data-v="${esc(r)}">${esc(short(r))}</button>`).join('')}${a.contacts.map(c=>`<button type="button" class="pill" data-act="fillto" data-v="${esc(c.addr)}">${esc(c.name)}</button>`).join('')}</div>
+      <label class="f">${b('পরিমাণ (KCT)','Amount (KCT)')}
+        <input class="in num" id="s-amt" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" value="${esc(pf.amt||'')}"></label>
+      <div class="pills">${[25,50,75].map(p=>`<button type="button" class="pill" data-act="pct" data-v="${p}">${p}%</button>`).join('')}<button type="button" class="pill" data-act="pct" data-v="100">Max</button></div>
+      <div class="grid g2" style="gap:10px">
+        <label class="f">${b('ক্যাটাগরি','Category')}<select class="in" id="s-cat">${['Transfer','Payment','Tip','Reward'].map(c=>`<option ${pf.cat===c?'selected':''}>${c}</option>`).join('')}</select></label>
+        <label class="f">${b('নোট','Note')}<input class="in" id="s-note" maxlength="80" value="${esc(pf.note||'')}"></label>
+      </div>
+      <div class="kv card flat" style="padding:12px">
+        <div><span>${b('ফি','Fee')}</span><span class="num" id="pv-fee">0.00 KCT</span></div>
+        <div><span>${b('প্রাপক পাবেন','Recipient gets')}</span><span class="num" id="pv-net">0.00 KCT</span></div>
+      </div>
+      <p class="small bad" id="s-err"></p>
+      <div class="row"><button class="btn pri" type="submit" style="flex:1">${b('রিভিউ','Review')}</button><button class="btn" type="button" data-act="clearsend">${b('মুছুন','Clear')}</button></div>
+    </form>
+    <div class="grid" style="align-content:start">
+      <div class="card"><header><h2>${b('রিসিভ','Receive')}</h2></header>
+        <p class="small muted">${b('আপনার KCT অ্যাড্রেস','Your KCT address')}</p>
+        <p class="num" style="overflow-wrap:anywhere;margin:6px 0 12px;font-size:.8rem">${esc(a.addr)}</p>
+        <div class="kv" style="margin-bottom:10px">
+          <div><span>${b('১০-ডিজিট ID','10-digit ID')}</span><span class="num" style="font-weight:800;letter-spacing:.06em;color:var(--gold)">${esc(a.uid||'-')}</span></div>
+        </div>
+        <div class="row"><button class="btn" data-act="copyaddr">${IC.copy} ${b('অ্যাড্রেস','Address')}</button><button class="btn" data-act="copyuid">${b('ID','ID')}</button><button class="btn" data-act="qr">QR</button></div></div>
+      <div class="card"><header><h2>${b('ইনস্ট্যান্ট টিপ','Instant tip')}</h2></header>
+        <label class="f">${b('মেম্বার','Member')}<select class="in" id="tip-to">${members.map(m=>`<option value="${m[0]}">${m[1]} ${m[0]}</option>`).join('')}</select></label>
+        <div class="pills" style="margin-top:10px">${a.tips.map(x=>`<button class="pill" data-act="tip" data-v="${x}">${x} KCT</button>`).join('')}</div></div>
+    </div>
+  </section>`;
+}
+
+/* ---------- MARKET ---------- */
+function vMarket(){
+  const a=S(),P=priceBdt(store.market.soldSupply),U=priceUsd(store.market.soldSupply);
+  const showSupply=supplyVisible();
+  return `
+  <section class="card hero" style="grid-template-columns:1fr">
+    <div class="row sp">
+      <div>
+        <div class="eyebrow">${b('KCT লাইভ প্রাইস','KCT Live Price')}</div>
+        <div style="font-family:var(--f-head);font-size:2.2rem;font-weight:700;line-height:1.1">$<span data-live="price-usd-mid">${U.toFixed(6)}</span></div>
+        <div class="muted small">৳<span data-live="price">${shortBdt(P)}</span> · ${b('২৪ঘ','24h')}: <span data-live="chg" class="num"></span></div>
+      </div>
+      <div class="pills">${TFS.map(x=>`<button class="pill ${x===tf?'on':''}" data-act="tf" data-v="${x}">${x}</button>`).join('')}</div>
+    </div>
+    ${showSupply?`
+      <div>
+        <div class="supplybar" style="margin-bottom:6px"><i data-live="supply-fill" style="width:${store.market.soldSupply/TOTAL_SUPPLY*100}%"></i></div>
+        <div class="row sp small muted"><span>${b('বিক্রি','Sold')}: <b class="num" data-live="sold">${f(store.market.soldSupply,2)}</b> / 250,000</span><span data-live="supply-pct">${(store.market.soldSupply/TOTAL_SUPPLY*100).toFixed(2)}%</span></div>
+      </div>
+    `:''}
+    <svg id="chart" class="chart" viewBox="0 0 640 240" role="img"></svg>
+  </section>
+
+  <section class="grid g2">
+    <div class="card form">
+      <header><h2>🛒 ${b('KCT কিনুন','Buy KCT')}</h2><span class="small muted">BDT → KCT</span></header>
+      <label class="f">${b('কত টাকা?','How much BDT?')}
+        <div class="row" style="flex-wrap:nowrap"><input class="in num" id="buy-bdt" type="number" min="0" step="any" placeholder="0.00" value="1000" style="font-size:1.2rem"><button class="btn sm" data-act="buymax" type="button">Max</button></div></label>
+      <div class="pills">${[100,500,1000,5000,10000].map(x=>`<button type="button" class="pill" data-act="buyquick" data-v="${x}">৳${f(x,0)}</button>`).join('')}</div>
+      <div class="kv card flat" style="padding:12px">
+        <div><span>${b('পাবেন','You get')}</span><span class="num" id="buy-utc" style="color:var(--good)">0 KCT</span></div>
+        <div><span>${b('ইফেক্টিভ প্রাইস','Effective price')}</span><span class="num" id="buy-avg">৳0.00</span></div>
+        <div><span>${b('নতুন প্রাইস','New price')}</span><span class="num" id="buy-newprice">—</span></div>
+        <div><span>${b('আসল ব্যালেন্স','Real balance')}</span><span class="num">৳${f(a.realBalance)}</span></div>
+      </div>
+      <p class="small bad" id="buy-err"></p>
+      <button class="btn buy" data-act="buygo" type="button">${b('কিনুন','Buy KCT')}</button>
+      ${a.realBalance<100?`<p class="small muted" style="text-align:center;margin-top:8px"><a href="#deposit" style="color:var(--gold)">${b('প্রথমে ব্যালেন্স অ্যাড করুন →','Add balance first →')}</a></p>`:''}
+    </div>
+    <div class="card form">
+      <header><h2>💰 ${b('KCT বিক্রি','Sell KCT')}</h2><span class="small muted">KCT → BDT</span></header>
+      <label class="f">${b('কত KCT?','How much KCT?')}
+        <div class="row" style="flex-wrap:nowrap"><input class="in num" id="sell-utc" type="number" min="0" step="any" placeholder="0.00" value="10" style="font-size:1.2rem"><button class="btn sm" data-act="sellmax" type="button">Max</button></div></label>
+      <div class="pills">${[25,50,75,100].map(x=>`<button type="button" class="pill" data-act="sellpct" data-v="${x}">${x}%</button>`).join('')}</div>
+      <div class="kv card flat" style="padding:12px">
+        <div><span>${b('পাবেন','You get')}</span><span class="num" id="sell-bdt" style="color:var(--good)">৳0.00</span></div>
+        <div><span>${b('পাবেন (USD)','Receive (USD)')}</span><span class="num" id="sell-usd">$0.00</span></div>
+        <div><span>${b('ইফেক্টিভ','Effective')}</span><span class="num" id="sell-avg">৳0.00</span></div>
+        <div><span>${b('হোল্ড কয়েন','Held')}</span><span class="num">${f(a.heldCoins)} KCT</span></div>
+      </div>
+      <p class="small bad" id="sell-err"></p>
+      <button class="btn sell" data-act="sellgo" type="button">${b('বিক্রি','Sell KCT')}</button>
+    </div>
+  </section>
+
+  <section class="card"><header><h2>🏆 ${b('টপ ক্রেতা','Top Buyers')}</h2><a class="btn sm" href="#leaderboard">${b('সব দেখুন','View all')}</a></header>
+    <div class="list">${leaderboardRows(topBuyers(5))}</div>
+  </section>`;
+}
+
+/* ---------- ACTIVITY ---------- */
+const F={q:'',type:'all',status:'all',sort:'new'};
+function filtered(){
+  const a=S();
+  let l=a.tx.filter(t=>{
+    if(F.type!=='all'&&t.type!==F.type)return false;
+    if(F.status!=='all'&&t.status!==F.status)return false;
+    if(F.q){const q=F.q.toLowerCase();if(!(t.who+' '+(t.note||'')+' '+t.id+' '+(t.cat||'')).toLowerCase().includes(q))return false}
+    return true});
+  l.sort((x,y)=>F.sort==='new'?y.ts-x.ts:F.sort==='old'?x.ts-y.ts:F.sort==='hi'?Math.abs(y.amt)-Math.abs(x.amt):Math.abs(x.amt)-Math.abs(y.amt));
+  return l;
+}
+function histBody(){
+  const l=filtered();
+  return l.length?`<table><thead><tr><th>${b('ধরন','Type')}</th><th>${b('পক্ষ','Party')}</th><th>${b('পরিমাণ','Amount')}</th><th>${b('স্ট্যাটাস','Status')}</th><th>${b('সময়','Time')}</th></tr></thead><tbody>${l.map(t=>`<tr class="click" data-act="txd" data-id="${t.id}"><td>${txType(t.type)}</td><td>${esc(short(t.who||'-'))}</td><td class="num">${t.type==='buy'?'+'+f(t.utc)+' KCT':t.type==='sell'||t.type==='deposit'?'+৳'+f(t.bdt):t.type==='withdraw'?'−৳'+f(t.bdt):(credit(t)?'+':'−')+f(Math.abs(t.amt))}</td><td><span class="tag ${stCls(t.status)}">${stTxt(t.status)}</span></td><td>${when(t.ts)}</td></tr>`).join('')}</tbody></table>`:`<p class="muted" style="padding:20px 0">${b('কিছু মেলেনি','No matches')}</p>`;
+}
+function vActivity(){
+  const o=(v,bn,en,cur)=>`<option value="${v}" ${cur===v?'selected':''}>${b(bn,en)}</option>`;
+  return `<section class="card">
+    <header><h2>${b('ট্রানজেকশন','Transactions')}</h2><div class="row"><button class="btn sm" data-act="export">${b('এক্সপোর্ট','Export')}</button><button class="btn sm" data-act="clearf">${b('রিসেট','Reset')}</button></div></header>
+    <div class="grid g3" style="gap:10px;margin-bottom:14px">
+      <input class="in" data-f="q" placeholder="${b('খুঁজুন','Search')}" value="${esc(F.q)}">
+      <select class="in" data-f="type">${o('all','সব','All',F.type)}${o('deposit','ডিপোজিট','Deposit',F.type)}${o('buy','কেনা','Buy',F.type)}${o('sell','বিক্রি','Sell',F.type)}${o('sent','পাঠানো','Sent',F.type)}${o('received','প্রাপ্ত','Received',F.type)}</select>
+      <select class="in" data-f="status">${o('all','সব','All',F.status)}${o('Completed','সম্পন্ন','Completed',F.status)}${o('Pending','পেন্ডিং','Pending',F.status)}${o('Rejected','বাতিল','Rejected',F.status)}</select>
+    </div>
+    <div class="tablewrap" id="hist">${histBody()}</div></section>`;
+}
+
+/* ---------- ACCOUNT ---------- */
+function toggle(label,key,on){return `<div class="item"><div><div class="t">${label}</div></div><label class="sw"><input type="checkbox" data-in="${key}" ${on?'checked':''}><i></i></label></div>`}
+function vAccount(){
+  const a=S(),pk=tier(),c=COUNTRIES[a.country]||COUNTRIES.OT;
+  return `
+  <div class="uid-banner" style="margin-bottom:16px">
+    <div>
+      <div class="lbl">${b('আপনার ইউনিক ১০-ডিজিট ID','Your Unique 10-digit ID')}</div>
+      <div class="id num">${esc(a.uid||'-')}</div>
+      <div class="small muted" style="margin-top:4px">${b('এই ID দিয়ে অন্যরা আপনাকে চিনতে পারবে','Others can identify you by this ID')}</div>
+    </div>
+    <button class="btn pri" data-act="copyuid">${IC.copy} ${b('কপি','Copy')}</button>
+  </div>
+  <section class="grid g2">
+    <div class="card form"><header><h2>${b('প্রোফাইল','Profile')}</h2><span class="tag" style="color:${pk[1]}">${pk[0]}</span></header>
+      <div class="row">${avatar(a,56)}<div style="min-width:0"><div><strong>${esc(a.name)}</strong></div><div class="muted small">${c.flag} ${esc(c.name)} · ${esc(a.nick)}</div></div></div>
+      <div class="pills">${COLORS.map((c2,i)=>`<button class="pill ${a.color===i?'on':''}" data-act="color" data-v="${i}" style="width:34px;height:34px;padding:0;background:${c2}" aria-label="${b('রঙ','Colour')} ${i+1}"></button>`).join('')}</div>
+      <label class="f">${b('ইউজারনেম','Username')}<input class="in" id="p-nick" value="${esc(a.nick)}" maxlength="24"></label>
+      <label class="f">${b('বায়ো','Bio')}<input class="in" id="p-bio" value="${esc(a.bio||'')}" maxlength="80"></label>
+      <div class="row"><button class="btn pri" data-act="saveprof">${b('সেভ','Save')}</button></div>
+      <h3>${b('ভেরিফিকেশন','Verification')}</h3>
+      <div class="list">${[['email','ইমেইল','Email'],['phone','ফোন','Phone'],['profile','প্রোফাইল','Profile']].map(v=>`<div class="item"><span>${b(v[1],v[2])}</span>${a.verified[v[0]]?`<span class="tag good">${b('ভেরিফায়েড','Verified')}</span>`:`<button class="btn sm" data-act="verify" data-v="${v[0]}">${b('ভেরিফাই','Verify')}</button>`}</div>`).join('')}</div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card"><header><h2>${b('পরিসংখ্যান','Stats')}</h2></header>
+        <div class="kv"><div><span>${b('মোট কেনা','Total Bought')}</span><span class="num">${f(a.totalBought||0,2)} KCT</span></div>
+        <div><span>${b('বর্তমান হোল্ডিং','Current Holding')}</span><span class="num">${f(a.heldCoins,2)} KCT</span></div>
+        <div><span>${b('রেফারেল কোড','Referral Code')}</span><span class="num">${a.ref.code}</span></div></div>
+        <div class="row" style="margin-top:12px"><button class="btn sm" data-act="copyref">${b('ইনভাইট','Invite link')}</button></div></div>
+      <div class="card"><header><h2>${b('অ্যাড্রেস বুক','Address book')}</h2></header>
+        <div class="list">${a.contacts.map((ct,i)=>`<div class="item"><div><div class="t">${esc(ct.name)}</div><div class="small muted">${esc(short(ct.addr))}</div></div><div class="row"><button class="btn sm" data-act="sendto" data-v="${esc(ct.addr)}">${b('পাঠান','Send')}</button><button class="btn sm danger" data-act="delc" data-v="${i}">✕</button></div></div>`).join('')||`<p class="muted small">${b('খালি','Empty')}</p>`}</div>
+        <div class="row" style="margin-top:10px;flex-wrap:nowrap"><input class="in" id="c-name" placeholder="${b('নাম','Name')}" style="max-width:120px"><input class="in" id="c-addr" placeholder="KCT1q…"><button class="btn sm" data-act="addc">${b('যোগ','Add')}</button></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <header><h2>🔐 ${b('অ্যাডমিন অ্যাক্সেস','Admin Access')}</h2>${store.admin?'<span class="tag gold">ADMIN</span>':''}</header>
+    ${store.admin
+      ? `<div class="notice good">${b('✅ অ্যাডমিন মোড চালু।','✅ Admin mode is on.')}</div>
+         <div class="row" style="margin-top:12px"><a class="btn pri" href="#admin">${IC.lock} ${b('Admin প্যানেল','Open Admin Panel')}</a><button class="btn danger" data-act="adminlock">${b('লক','Lock')}</button></div>`
+      : `<label class="f">${b('অ্যাডমিন পাসওয়ার্ড','Admin password')}<input class="in" type="password" id="admin-pw" placeholder="${b('পাসওয়ার্ড','Password')}" autocomplete="off"></label>
+         <p class="small bad" id="admin-err"></p>
+         <button class="btn pri" data-act="adminunlock" style="margin-top:8px">${IC.lock} ${b('আনলক','Unlock')}</button>`}
+  </section>
+
+  <section class="grid g2">
+    <div class="card"><header><h2>${b('সিকিউরিটি','Security')}</h2></header>
+      <div class="list">
+        <div class="item"><div><div class="t">${b('PIN','PIN')}</div><div class="small muted">${a.pin?b('চালু','On'):b('বন্ধ','Off')}</div></div>
+          <div class="row"><input class="in" id="pin-in" inputmode="numeric" maxlength="6" placeholder="4-6" style="width:80px;padding:5px 8px"><button class="btn sm" data-act="setpin">${a.pin?b('বদলান','Change'):b('সেট','Set')}</button>${a.pin?`<button class="btn sm danger" data-act="rmpin">${b('বন্ধ','Off')}</button>`:''}</div></div>
+      </div></div>
+    <div class="card"><header><h2>${b('পছন্দ','Preferences')}</h2></header>
+      <div class="list">
+        <div class="item"><span>${b('ভাষা','Language')}</span><div class="pills"><button class="pill ${store.lang==='bn'?'on':''}" data-act="setlang" data-v="bn">বাংলা</button><button class="pill ${store.lang==='en'?'on':''}" data-act="setlang" data-v="en">English</button></div></div>
+        <div class="item"><span>${b('থিম','Theme')}</span><div class="pills">${[['auto','অটো','Auto'],['dark','ডার্ক','Dark'],['light','লাইট','Light']].map(t=>`<button class="pill ${store.theme===t[0]?'on':''}" data-act="settheme" data-v="${t[0]}">${b(t[1],t[2])}</button>`).join('')}</div></div>
+        ${toggle(b('সাউন্ড','Sound'),'sound',store.sound)}
+      </div></div>
+  </section>
+
+  <section class="card">
+    <header><h2>📱 ${b('হেল্পলাইন','Helpline')}</h2></header>
+    <div class="list">
+      <a class="item" href="${TELEGRAM_URL}" target="_blank" rel="noopener" style="cursor:pointer">
+        <div class="row"><span style="font-size:22px">✈️</span><div><div class="t"><strong>Telegram Helpline</strong></div><div class="small muted">${b('২৪/৭ লাইভ সাপোর্ট','24/7 live support')}</div></div></div>
+        <span class="btn tg sm">${b('খুলুন','Open')}</span></a>
+    </div>
+    <div class="row sp" style="margin-top:14px"><span class="muted small">KCT Coin v1.0</span><button class="btn danger" data-act="reset">${b('লোকাল রিসেট','Reset local')}</button></div>
+  </section>`;
+}
+
+/* ---------- ADMIN ---------- */
+function vAdmin(){
+  const allDeps=[];store.users.forEach(u=>{if(u.deposits)u.deposits.forEach(d=>allDeps.push({...d,user:u.name,userPhone:u.phone,userUid:u.uid}))});
+  const pending=allDeps.filter(d=>d.status==='Pending').sort((x,y)=>y.ts-x.ts);
+  const s=store.settings;
+  return `
+  <div class="notice" style="margin-bottom:16px">
+    <strong>⚠️ ${b('অ্যাডমিন কন্ট্রোল প্যানেল','Admin Control Panel')}</strong>
+  </div>
+  <section class="grid g2">
+    <div class="card"><header><h2>${b('পেন্ডিং ডিপোজিট','Pending Deposits')}</h2><span class="pending-badge">${pending.length}</span></header>
+      <div class="list">${pending.length?pending.map(d=>`<div class="item" style="flex-direction:column;align-items:stretch;gap:8px"><div class="row sp"><div><div class="t"><strong>৳${f(d.bdt)}</strong> · ${d.method==='binance'?'₿ Binance':'৳ bKash'}</div><div class="small muted">${esc(d.user)} · ${esc(d.userPhone)}</div><div class="small muted">ID: <code>${esc(d.userUid||'-')}</code></div><div class="small muted">TrxID: <code>${esc(d.trxid)}</code></div><div class="small muted">${when(d.ts)}</div></div></div><div class="row"><button class="btn buy sm" data-act="depok" data-v="${d.id}">✅ ${b('অনুমোদন','Approve')}</button><button class="btn sm danger" data-act="deprej" data-v="${d.id}">❌ ${b('বাতিল','Reject')}</button></div></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending deposits')}</p>`}</div></div>
+    <div class="card form"><header><h2>${b('সেটিংস','Settings')}</h2></header>
+      ${toggle(b('মেইনটেন্যান্স','Maintenance'),'maint',s.maintenance)}
+      ${toggle(b('ডিপোজিট চালু','Deposits'),'dep-en',s.depositsEnabled)}
+      ${toggle(b('Binance চালু','Binance'),'bin-en',s.binanceEnabled)}
+      ${toggle(b('bKash চালু','bKash'),'bk-en',s.bkashEnabled)}
+      ${toggle(b('সাপ্লাই সবাইকে দেখান','Show supply to all'),'reveal-supply',s.revealSupply)}
+      <label class="f">${b('গ্লোবাল নোটিশ','Global notice')}<input class="in" id="ad-notice" value="${esc(s.notice)}" maxlength="120"></label>
+      <button class="btn pri" data-act="savenotice">${b('সেভ','Save')}</button>
+      <div class="kv card flat" style="padding:12px;margin-top:8px">
+        <div><span>${b('মোট সাপ্লাই','Total Supply')}</span><span class="num">${f(TOTAL_SUPPLY,0)} KCT</span></div>
+        <div><span>${b('বিক্রি হয়েছে','Sold')}</span><span class="num">${f(store.market.soldSupply,2)} KCT</span></div>
+        <div><span>${b('বাকি','Remaining')}</span><span class="num">${f(TOTAL_SUPPLY-store.market.soldSupply,2)} KCT</span></div>
+        <div><span>${b('বর্তমান প্রাইস','Current Price')}</span><span class="num">${shortBdt(priceBdt(store.market.soldSupply))}</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="grid g2">
+    <div class="card"><header><h2>${b('ইউজার','Users')}</h2></header>
+      <div class="list">${store.users.map(u=>`<div class="item"><div><div class="t"><strong>${esc(u.name)}</strong></div><div class="small muted">ID: <code>${esc(u.uid||'-')}</code></div><div class="small muted">${(COUNTRIES[u.country]||COUNTRIES.OT).flag} ${esc(u.phone)}</div><div class="small muted">৳${f(u.realBalance)} · ${f(u.heldCoins)} KCT · ${b('মোট কেনা','Bought')} ${f(u.totalBought||0)}</div></div></div>`).join('')}</div></div>
+    <div class="card form"><header><h2>${b('মিন্ট / বার্ন','Mint / Burn')}</h2></header>
+      <label class="f">${b('পরিমাণ','Amount')}<input class="in num" id="ad-amt" type="number" min="0" step="any" placeholder="0.00"></label>
+      <label class="f">${b('ইউজার (ফোন)','User (phone)')}<input class="in" id="ad-user" placeholder="01XXXXXXXXX" value="${S().phone}"></label>
+      <div class="row"><button class="btn pri" data-act="mint">${b('মিন্ট','Mint')}</button><button class="btn danger" data-act="burn">${b('বার্ন','Burn')}</button></div>
+    </div>
+  </section>`;
+}
+
+/* ============ AUTH ============ */
+let authMode='login';
+function vAuth(){
+  return `<div class="auth-screen"><div class="auth-box">
+    ${coin('big')}
+    <div style="text-align:center">
+      <h1 class="auth-title">KCT Coin</h1>
+      <p class="auth-sub">Krypto Trust Coin</p>
+    </div>
+    <div class="pills" style="margin:0">
+      <button class="pill ${authMode==='login'?'on':''}" data-act="authmode" data-v="login">${b('লগইন','Login')}</button>
+      <button class="pill ${authMode==='signup'?'on':''}" data-act="authmode" data-v="signup">${b('সাইন আপ','Sign up')}</button>
+    </div>
+    ${authMode==='login'?loginForm():signupForm()}
+    <p class="small muted" style="text-align:center">${b('আসল ব্লকচেইন বা অর্থ নয়।','Not real blockchain or money.')}</p>
+    <a href="${TELEGRAM_URL}" target="_blank" rel="noopener" class="btn tg" style="width:100%">✈️ Telegram ${b('সাপোর্ট','Support')}</a>
+  </div></div>`;
+}
+function loginForm(){
+  return `<form class="form" id="loginform" style="width:100%">
+    <label class="f">${b('মোবাইল','Mobile')}<input class="in" id="lg-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"></label>
+    <label class="f">${b('পাসওয়ার্ড','Password')}<input class="in" id="lg-pw" type="password" placeholder="••••••" autocomplete="current-password"></label>
+    <p class="small bad" id="lg-err"></p>
+    <button class="btn pri" type="submit">${b('লগইন','Login')}</button>
+  </form>`;
+}
+function signupForm(){
+  const opts=Object.entries(COUNTRIES).map(([k,c])=>`<option value="${k}">${c.flag} ${c.name}</option>`).join('');
+  return `<form class="form" id="signupform" style="width:100%">
+    <label class="f">${b('পুরো নাম','Full name')}<input class="in" id="su-name" placeholder="${b('আপনার নাম','Your name')}" autocomplete="name"></label>
+    <label class="f">${b('ইমেইল','Email')}<input class="in" id="su-email" type="email" placeholder="you@example.com" autocomplete="email"></label>
+    <label class="f">${b('মোবাইল','Mobile')}<input class="in" id="su-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"></label>
+    <label class="f">${b('দেশ','Country')}<select class="in" id="su-country">${opts}</select></label>
+    <label class="f">${b('পাসওয়ার্ড','Password')}<input class="in" id="su-pw" type="password" autocomplete="new-password"></label>
+    <label class="f">${b('কনফার্ম','Confirm')}<input class="in" id="su-pw2" type="password" autocomplete="new-password"></label>
+    <p class="small bad" id="su-err"></p>
+    <button class="btn pri" type="submit">${b('অ্যাকাউন্ট খুলুন','Create account')}</button>
+  </form>`;
+}
+
+/* ============ SHELL ============ */
+function applyTheme(){const r=document.documentElement;if(store.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',store.theme)}
+function render(){
+  applyTheme();
+  const app=$('#app');
+  if(!store.session){app.innerHTML=vAuth();return}
+  const a=S(),r=route();
+  const tabs=ROUTES.filter(x=>x!=='admin'||isAdmin());
+  const c=COUNTRIES[a.country]||COUNTRIES.OT;
+  app.innerHTML=`
+  <div class="top"><div class="bar">
+    <div class="brand">${coin()}<span>KCT Coin</span>${store.settings.maintenance?`<span class="badge warn">${b('মেইনটেন্যান্স','MAINT')}</span>`:''}${store.admin?'<span class="badge gold">ADMIN</span>':''}</div>
+    <div class="grow"></div>
+    <span class="flagchip">${c.flag} <span>${esc(a.nick)}</span></span>
+    <button class="ibtn" data-act="theme">${IC.sun}</button>
+    <button class="ibtn" data-act="langtog">${IC.globe}</button>
+    <button class="ibtn" data-act="logout">${IC.out}</button>
+  </div>
+  <nav class="tabs">${tabs.map(x=>`<a href="#${x}" class="${x===r?'on':''} ${x==='admin'?'admin-tab':''}">${b(NAMES[x][0],NAMES[x][1])}</a>`).join('')}</nav></div>
+  <main id="view">${{home:vHome,wallet:vWallet,deposit:vDeposit,market:vMarket,leaderboard:vLeaderboard,activity:vActivity,account:vAccount,admin:vAdmin}[r]()}</main>
+  <a href="${TELEGRAM_URL}" target="_blank" rel="noopener" class="tg-help" aria-label="Telegram Support">
+    <svg viewBox="0 0 24 24"><path d="M22 3L2 11l6 2 2 6 3-4 5 3 4-15z"/></svg>
+    <span>${b('সাহায্য','Help')}</span>
+  </a>`;
+  liveVals();
+  if($('#chart'))drawChart();
+  if(r==='wallet')sendPreview();
+  if(r==='market')previewBuySell();
+}
+
+/* ============ SEND ============ */
+const validTo=s=>/^KCT1[a-z0-9]{20,45}$/.test(s)||/^@[a-z0-9_]{3,24}$/i.test(s)||/^\d{10}$/.test(s);
+const feeOf=amt=>amt>0?Math.max(MIN_FEE,r2(amt*FEE_RATE)):0;
+function sendPreview(){
+  const a=S(),amt=parseFloat($('#s-amt')?.value)||0,fee=feeOf(amt);
+  if(!$('#pv-fee'))return null;
+  $('#pv-fee').textContent=f(fee)+' KCT';$('#pv-net').textContent=f(amt)+' KCT';
+  const to=$('#s-to').value.trim(),err=$('#s-err');let m='';
+  if($('#s-to').value&&!validTo(to))m=b('ফরম্যাট সঠিক নয়','Invalid format');
+  else if(to===a.addr||to.toLowerCase()===a.nick.toLowerCase()||to===a.uid)m=b('নিজের কাছে নয়','Cannot send to self');
+  else if(amt+fee>a.heldCoins)m=b('KCT যথেষ্ট নয়','Insufficient KCT');
+  err.textContent=m;return {amt,fee,to,err:m};
+}
+function maintBlock(){if(store.settings.maintenance){toast(b('মেইনটেন্যান্স','Under maintenance'));return true}return false}
+function rateBlock(){
+  const a=S();a.sendLog=(a.sendLog||[]).filter(t=>t>NOW()-6e4);
+  if(a.sendLog.length>=5){toast(b('অনেক দ্রুত','Too fast'));return true}
+  return false;
+}
+function pinField(){return S().pin?`<label class="f" style="margin-top:12px">${b('PIN','PIN')}<input class="in" id="m-pin" type="password" inputmode="numeric" maxlength="6"></label><p class="small bad" id="m-err"></p>`:'<p class="small bad" id="m-err"></p>'}
+function pinOk(){if(!S().pin)return true;if(($('#m-pin')?.value||'')===S().pin)return true;$('#m-err').textContent=b('PIN ভুল','Wrong PIN');return false}
+function addTx(o){const t=Object.assign({id:txid(),status:'Completed',ts:NOW(),fee:0,note:'',cat:'Transfer'},o);S().tx.push(t);return t}
+function notify(kind,msg){if(S().notif[kind])toast(msg);beep()}
+function doSend(to,amt,note,cat){
+  const a=S(),fee=feeOf(amt);
+  a.heldCoins=r2(a.heldCoins-amt-fee);
+  const r=store.users.find(u=>u!==a&&(u.uid===to||u.nick===to||u.addr===to));
+  if(r){
+    r.heldCoins=r2(r.heldCoins+amt);
+    r.tx.push({id:txid(),type:'received',status:'Completed',ts:NOW(),amt,who:a.nick,note,cat,fee:0});
+  }
+  return addTx({type:'sent',amt,who:to,note,cat,fee});
+}
+function confirmSend(to,amt,note,cat,after){
+  const fee=feeOf(amt);
+  modal(b('নিশ্চিত করুন','Confirm'),`
+    <div class="kv"><div><span>${b('প্রাপক','To')}</span><span class="num">${esc(short(to))}</span></div>
+    <div><span>${b('পরিমাণ','Amount')}</span><span class="num">${f(amt)} KCT</span></div>
+    <div><span>${b('ফি','Fee')}</span><span class="num">${f(fee)} KCT</span></div>
+    <div><span>${b('মোট','Total')}</span><span class="num"><b>${f(amt+fee)} KCT</b></span></div>
+    ${note?`<div><span>${b('নোট','Note')}</span><span>${esc(note)}</span></div>`:''}</div>${pinField()}
+    <div class="row" style="margin-top:16px"><button class="btn" data-act="mclose">${b('বাতিল','Cancel')}</button><button class="btn pri" id="m-ok" style="flex:1">${b('কনফার্ম','Confirm')}</button></div>`,
+    root=>{$('#m-ok',root).onclick=()=>{
+      if(!pinOk()||maintBlock()||rateBlock())return;
+      const t=doSend(to,amt,note,cat);closeModal();
+      notify('send',b(`${f(amt)} KCT পাঠানো`,`${f(amt)} KCT sent`));
+      if(after)after();else{render();receipt(t)}}});
+}
+function receipt(t){
+  const txt=`KCT Coin receipt\nID: ${t.id}\nType: ${t.type}\nAmount: ${f(t.amt||t.utc)} KCT\nParty: ${t.who}\nStatus: ${t.status}\nTime: ${when(t.ts)}`;
+  modal(b('রসিদ','Receipt'),`<pre class="card flat small" style="white-space:pre-wrap;overflow-wrap:anywhere;margin:0">${esc(txt)}</pre><div class="row" style="margin-top:14px"><button class="btn pri" id="rc-copy">${b('কপি','Copy')}</button><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div>`,r=>{$('#rc-copy',r).onclick=()=>copyText(txt)});
+}
+function txDetail(id){
+  const t=S().tx.find(x=>x.id===id);if(!t)return;
+  let amt;
+  if(t.type==='buy')amt=`+${f(t.utc)} KCT (৳${f(t.bdt)})`;
+  else if(t.type==='sell')amt=`+৳${f(t.bdt)} (${f(t.utc)} KCT)`;
+  else if(t.type==='deposit')amt=`+৳${f(t.bdt)}`;
+  else if(t.type==='withdraw')amt=`−৳${f(t.bdt)}`;
+  else amt=`${credit(t)?'+':'−'}${f(Math.abs(t.amt))} KCT`;
+  modal(b('বিস্তারিত','Details'),`
+    <div class="kv"><div><span>${b('ধরন','Type')}</span><span>${txType(t.type)}</span></div>
+    <div><span>${b('পরিমাণ','Amount')}</span><span class="num">${amt}</span></div>
+    <div><span>${b('পক্ষ','Party')}</span><span style="overflow-wrap:anywhere;text-align:right">${esc(t.who||'-')}</span></div>
+    <div><span>${b('স্ট্যাটাস','Status')}</span><span class="${stCls(t.status)}">${stTxt(t.status)}</span></div>
+    <div><span>${b('সময়','Time')}</span><span>${when(t.ts)}</span></div></div>
+    <div class="row" style="margin-top:16px"><button class="btn sm" data-act="copytx" data-v="${t.id}">${b('ID কপি','Copy ID')}</button><button class="btn sm" data-act="mclose">${b('বন্ধ','Close')}</button></div>`);
+}
+
+/* ============ BUY/SELL PREVIEW ============ */
+function previewBuy(){
+  const a=S(),bdt=parseFloat($('#buy-bdt')?.value)||0;
+  if(!$('#buy-utc'))return;
+  const sold=store.market.soldSupply;
+  const remain=TOTAL_SUPPLY-sold;
+  let utc=solveBuy(bdt,sold);
+  let actualBdt=bdt;
+  if(utc>remain){utc=remain;actualBdt=costOf(utc,sold);}
+  const avg=utc>0?actualBdt/utc:priceBdt(sold);
+  const newP=priceBdt(sold+utc);
+  $('#buy-utc').textContent=f(utc,4)+' KCT';
+  $('#buy-avg').textContent=shortBdt(avg)+' / '+shortUsd(avg/BDT_PER_USD);
+  $('#buy-newprice').textContent=shortBdt(newP)+' / '+shortUsd(newP/BDT_PER_USD);
+  let err='';
+  if(bdt>a.realBalance)err=b('আসল ব্যালেন্স যথেষ্ট নয়','Insufficient real balance');
+  else if(utc<=0&&bdt>0)err=b('সাপ্লাই শেষ','Supply exhausted');
+  $('#buy-err').textContent=err;
+}
+function previewSell(){
+  const a=S(),utc=parseFloat($('#sell-utc')?.value)||0;
+  if(!$('#sell-bdt'))return;
+  const bdt=solveSell(Math.min(utc,a.heldCoins),store.market.soldSupply);
+  $('#sell-bdt').textContent=shortBdt(bdt);
+  $('#sell-usd').textContent=shortUsd(bdt/BDT_PER_USD);
+  $('#sell-avg').textContent=shortBdt(utc>0?bdt/utc:0);
+  let err='';
+  if(utc>a.heldCoins)err=b('KCT যথেষ্ট নয়','Insufficient KCT');
+  $('#sell-err').textContent=err;
+}
+function previewBuySell(){previewBuy();previewSell()}
+
+/* ============ ACTIONS ============ */
+const A={
+  'mclose':()=>closeModal(),
+  'mclose-bg':(el,e)=>{if(e.target===el)closeModal()},
+  authmode:(el)=>{authMode=el.dataset.v;render()},
+  logout:()=>{store.session=null;store.admin=false;save();render()},
+  theme:()=>{const o=['auto','dark','light'];store.theme=o[(o.indexOf(store.theme)+1)%3];save();render()},
+  langtog:()=>{store.lang=store.lang==='bn'?'en':'bn';save();render()},
+  setlang:(el)=>{store.lang=el.dataset.v;save();render()},
+  settheme:(el)=>{store.theme=el.dataset.v;save();render()},
+  copyaddr:()=>copyText(S().addr,b('অ্যাড্রেস কপি','Address copied')),
+  copyuid:()=>copyText(S().uid,b('ID কপি হয়েছে','ID copied')),
+  copybinid:()=>copyText(BINANCE_ID,b('Binance ID কপি','Binance ID copied')),
+  copybk:()=>copyText(BKASH_NUMBER,b('bKash নম্বর কপি','bKash number copied')),
+  openleaderboard:()=>openLeaderboardModal(),
+  binqr:()=>modal(b('Binance ID QR','Binance ID QR'),`<div style="text-align:center"><div class="qr" id="bqr"></div><p class="num small" style="margin:12px 0;overflow-wrap:anywhere;font-weight:800;font-size:1.2rem;letter-spacing:.08em">${BINANCE_ID}</p><div class="row" style="justify-content:center"><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div></div>`,r=>{qr($('#bqr',r),BINANCE_ID)}),
+  qr:()=>modal(b('QR','QR'),`<div style="text-align:center"><div class="qr" id="qrbox"></div><p class="num small" style="margin:12px 0;overflow-wrap:anywhere">${esc(S().addr)}</p><p class="small muted">ID: <b class="num">${esc(S().uid)}</b></p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn" id="qr-copy">${b('কপি','Copy')}</button><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div></div>`,r=>{qr($('#qrbox',r),S().addr);$('#qr-copy',r).onclick=()=>copyText(S().addr)}),
+  depmethod:(el)=>{depositMethod=el.dataset.v;render()},
+  fillto:(el)=>{$('#s-to').value=el.dataset.v;sendPreview()},
+  sendto:(el)=>{store.prefill={to:el.dataset.v};location.hash='#wallet';render()},
+  pct:(el)=>{const a=S(),p=+el.dataset.v;$('#s-amt').value=r2(a.heldCoins*p/100);sendPreview()},
+  clearsend:()=>{['s-to','s-amt','s-note'].forEach(i=>$('#'+i).value='');sendPreview()},
+  tip:(el)=>{const amt=+el.dataset.v,to=$('#tip-to').value;
+    if(amt+feeOf(amt)>S().heldCoins){toast(b('KCT যথেষ্ট নয়','Insufficient KCT'));return}
+    confirmSend(to,amt,b('টিপ','Tip'),'Tip')},
+  tf:(el)=>{tf=el.dataset.v;drawChart();$$('[data-act="tf"]').forEach(x=>x.classList.toggle('on',x.dataset.v===tf))},
+  buymax:()=>{$('#buy-bdt').value=S().realBalance;previewBuy()},
+  buyquick:(el)=>{$('#buy-bdt').value=el.dataset.v;previewBuy()},
+  sellmax:()=>{$('#sell-utc').value=S().heldCoins;previewSell()},
+  sellpct:(el)=>{$('#sell-utc').value=r2(S().heldCoins*(+el.dataset.v)/100);previewSell()},
+  buygo:()=>{
+    if(maintBlock())return;
+    const a=S();
+    let bdt=parseFloat($('#buy-bdt').value)||0;
+    if(bdt<=0){toast(b('পরিমাণ দিন','Enter amount'));return}
+    if(bdt>a.realBalance){toast(b('ব্যালেন্স যথেষ্ট নয়','Insufficient balance'));return}
+    const sold=store.market.soldSupply,remain=TOTAL_SUPPLY-sold;
+    let utc=solveBuy(bdt,sold);
+    if(utc>remain){utc=remain;bdt=costOf(utc,sold);}
+    if(utc<=0){toast(b('সাপ্লাই শেষ','Supply exhausted'));return}
+    const newP=priceBdt(sold+utc);
+    const U=u=>shortUsd(u/BDT_PER_USD);
+    modal(b('কেনা নিশ্চিত','Confirm buy'),`
+      <div class="kv">
+        <div><span>${b('খরচ','Spend')}</span><span class="num">৳${f(bdt)} (${U(bdt)})</span></div>
+        <div><span>${b('পাবেন','Receive')}</span><span class="num good">${f(utc,4)} KCT</span></div>
+        <div><span>${b('ইফেক্টিভ','Effective')}</span><span class="num">${shortBdt(bdt/utc)} (${U(bdt/utc)})</span></div>
+        <div><span>${b('নতুন প্রাইস','New price')}</span><span class="num">${shortBdt(newP)} (${U(newP)})</span></div>
+      </div>${pinField()}
+      <div class="row" style="margin-top:16px"><button class="btn" data-act="mclose">${b('বাতিল','Cancel')}</button><button class="btn buy" id="m-ok" style="flex:1">${b('কিনুন','Buy')}</button></div>`,
+      root=>{$('#m-ok',root).onclick=()=>{
+        if(!pinOk())return;
+        a.realBalance=r2(a.realBalance-bdt);a.heldCoins=r2(a.heldCoins+utc);
+        a.totalBought=(a.totalBought||0)+utc;
+        store.market.soldSupply=r2(store.market.soldSupply+utc);
+        store.market.priceHistory.push({t:NOW(),p:priceBdt(store.market.soldSupply)});
+        addTx({type:'buy',amt:0,utc,bdt,who:'KCT Market',note:'Bought'});
+        save();closeModal();beep();notify('send',b(`+${f(utc,4)} KCT`,`+${f(utc,4)} KCT`));render()}})},
+  sellgo:()=>{
+    if(maintBlock())return;
+    const a=S(),utc=parseFloat($('#sell-utc').value)||0;
+    if(utc<=0){toast(b('পরিমাণ দিন','Enter amount'));return}
+    if(utc>a.heldCoins){toast(b('KCT যথেষ্ট নয়','Insufficient KCT'));return}
+    const bdt=solveSell(utc,store.market.soldSupply);
+    if(bdt<=0){toast(b('সঠিক পরিমাণ','Valid amount'));return}
+    const newP=priceBdt(Math.max(0,store.market.soldSupply-utc));
+    const U=u=>shortUsd(u/BDT_PER_USD);
+    modal(b('বিক্রি নিশ্চিত','Confirm sell'),`
+      <div class="kv">
+        <div><span>${b('বিক্রি','Sell')}</span><span class="num">${f(utc,4)} KCT</span></div>
+        <div><span>${b('পাবেন','Receive')}</span><span class="num good">৳${f(bdt)} (${U(bdt)})</span></div>
+        <div><span>${b('ইফেক্টিভ','Effective')}</span><span class="num">${shortBdt(bdt/utc)} (${U(bdt/utc)})</span></div>
+        <div><span>${b('নতুন প্রাইস','New price')}</span><span class="num">${shortBdt(newP)} (${U(newP)})</span></div>
+      </div>${pinField()}
+      <div class="row" style="margin-top:16px"><button class="btn" data-act="mclose">${b('বাতিল','Cancel')}</button><button class="btn sell" id="m-ok" style="flex:1">${b('বিক্রি','Sell')}</button></div>`,
+      root=>{$('#m-ok',root).onclick=()=>{
+        if(!pinOk())return;
+        a.heldCoins=r2(a.heldCoins-utc);a.realBalance=r2(a.realBalance+bdt);
+        store.market.soldSupply=r2(Math.max(0,store.market.soldSupply-utc));
+        store.market.priceHistory.push({t:NOW(),p:priceBdt(store.market.soldSupply)});
+        addTx({type:'sell',amt:0,utc,bdt,who:'KCT Market',note:'Sold'});
+        save();closeModal();beep();notify('send',b(`৳${f(bdt)} পেয়েছেন`,`Received ৳${f(bdt)}`));render()}})},
+  txd:(el)=>txDetail(el.dataset.id),
+  copytx:(el)=>copyText(el.dataset.v,b('কপি','Copied')),
+  clearf:()=>{Object.assign(F,{q:'',type:'all',status:'all',sort:'new'});render()},
+  export:()=>{
+    const l=filtered(),csv='id,type,amount,party,status,time\n'+l.map(t=>[t.id,t.type,t.amt,t.who,t.status,new Date(t.ts).toISOString()].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    modal(b('এক্সপোর্ট','Export'),`<textarea class="in" readonly style="min-height:200px;font-family:monospace;font-size:.78rem">${esc(csv)}</textarea><div class="row" style="margin-top:12px"><button class="btn pri" id="ex-copy">${b('কপি','Copy')}</button><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div>`,r=>{$('#ex-copy',r).onclick=()=>copyText(csv)})},
+  color:(el)=>{S().color=+el.dataset.v;save();render()},
+  saveprof:()=>{let n=$('#p-nick').value.trim();if(!/^@?[a-z0-9_]{3,24}$/i.test(n)){toast(b('সঠিক ইউজারনেম','Valid username'));return}
+    S().nick=n.startsWith('@')?n:'@'+n;S().bio=$('#p-bio').value.trim();save();toast(b('সেভ','Saved'));render()},
+  verify:(el)=>{S().verified[el.dataset.v]=true;save();toast(b('ভেরিফাইড','Verified'));render()},
+  copyref:()=>copyText(`https://kctcoin.io/join?ref=${S().ref.code}`,b('কপি','Copied')),
+  addc:()=>{const n=$('#c-name').value.trim(),ad=$('#c-addr').value.trim();if(!n||(!/^KCT1[a-z0-9]{20,45}$/.test(ad)&&!/^\d{10}$/.test(ad))){toast(b('নাম ও অ্যাড্রেস/ID','Name & address/ID'));return}S().contacts.push({name:n,addr:ad});save();render()},
+  delc:(el)=>{S().contacts.splice(+el.dataset.v,1);save();render()},
+  setpin:()=>{const v=$('#pin-in').value;if(!/^\d{4,6}$/.test(v)){toast(b('৪-৬ সংখ্যা','4-6 digits'));return}S().pin=v;save();toast(b('PIN সেট','PIN set'));render()},
+  rmpin:()=>{S().pin=null;save();render()},
+  reset:()=>modal(b('রিসেট','Reset'),`<p class="muted">${b('সব ডেটা মুছে যাবে।','All data will be erased.')}</p><div class="row" style="margin-top:14px"><button class="btn" data-act="mclose">${b('বাতিল','Cancel')}</button><button class="btn danger" id="rs-ok">${b('রিসেট','Reset')}</button></div>`,r=>{$('#rs-ok',r).onclick=()=>{const lang=store.lang;store=seedStore();store.lang=lang;save();closeModal();location.hash='#home';render()}}),
+  adminunlock:()=>{
+    const pw=($('#admin-pw')?.value||'');
+    if(pw===ADMIN_PASSWORD){store.admin=true;save();beep();toast(b('✅ অ্যাডমিন আনলক','✅ Admin unlocked'));render();}
+    else{const e=$('#admin-err');if(e)e.textContent=b('পাসওয়ার্ড ভুল','Wrong password');beep();}
+  },
+  adminlock:()=>{store.admin=false;save();if(location.hash==='#admin')location.hash='#home';toast(b('অ্যাডমিন লক','Admin locked'));render();},
+  depok:(el)=>{
+    const id=el.dataset.v;let dep,user;
+    for(const u of store.users){if(!u.deposits)continue;const d=u.deposits.find(x=>x.id===id);if(d){dep=d;user=u;break}}
+    if(!dep||dep.status!=='Pending')return;
+    dep.status='Completed';dep.approvedAt=NOW();
+    user.realBalance=r2(user.realBalance+dep.bdt);
+    user.tx.push({id:txid(),type:'deposit',status:'Completed',ts:NOW(),bdt:dep.bdt,amt:0,who:dep.method==='binance'?'Binance':'bKash',note:`Deposit ${dep.trxid}`,cat:'Deposit',fee:0});
+    save();beep();toast(b(`৳${f(dep.bdt)} অনুমোদিত`,'Approved'));render();
+  },
+  deprej:(el)=>{
+    const id=el.dataset.v;
+    for(const u of store.users){if(!u.deposits)continue;const d=u.deposits.find(x=>x.id===id);if(d&&d.status==='Pending'){d.status='Rejected';save();toast(b('বাতিল','Rejected'));render();return}}
+  },
+  savenotice:()=>{store.settings.notice=$('#ad-notice').value.trim();save();toast(b('সেভ','Saved'));},
+  mint:()=>{const v=parseFloat($('#ad-amt').value)||0,phone=$('#ad-user').value.trim();
+    if(v<=0)return;const u=store.users.find(x=>x.phone===phone);if(!u){toast(b('ইউজার নেই','No user'));return}
+    if(store.market.soldSupply+v>TOTAL_SUPPLY){toast(b('সাপ্লাই শেষ','Max supply'));return}
+    u.heldCoins=r2(u.heldCoins+v);store.market.soldSupply=r2(store.market.soldSupply+v);
+    store.market.priceHistory.push({t:NOW(),p:priceBdt(store.market.soldSupply)});
+    u.tx.push({id:txid(),type:'reward',status:'Completed',ts:NOW(),amt:v,who:'KCT Admin',note:'Admin mint',cat:'Reward',fee:0});
+    save();toast(b('মিন্ট','Minted'));render()},
+  burn:()=>{const v=parseFloat($('#ad-amt').value)||0,phone=$('#ad-user').value.trim();
+    if(v<=0)return;const u=store.users.find(x=>x.phone===phone);if(!u||v>u.heldCoins){toast(b('সঠিক পরিমাণ','Valid amount'));return}
+    u.heldCoins=r2(u.heldCoins-v);store.market.burned=r2(store.market.burned+v);
+    u.tx.push({id:txid(),type:'sent',status:'Completed',ts:NOW(),amt:v,who:'Burn address',note:'Admin burn',cat:'Transfer',fee:0});
+    save();toast(b('বার্ন','Burned'));render()}
+};
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const fn=A[el.dataset.act];if(fn){e.preventDefault();fn(el,e)}
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(e.target.id==='loginform'){
+    const phone=$('#lg-phone').value.trim(),pw=$('#lg-pw').value;
+    const u=store.users.find(x=>x.phone===phone);
+    if(!u){$('#lg-err').textContent=b('এই নম্বরে অ্যাকাউন্ট নেই','No account');return}
+    if(u.pwHash!==hashPw(pw)){$('#lg-err').textContent=b('পাসওয়ার্ড ভুল','Wrong password');return}
+    store.session=phone;store.admin=false;save();beep();toast(b('স্বাগতম','Welcome'));render();return;
+  }
+  if(e.target.id==='signupform'){
+    const name=$('#su-name').value.trim(),email=$('#su-email').value.trim(),phone=$('#su-phone').value.trim(),
+      country=$('#su-country').value,pw=$('#su-pw').value,pw2=$('#su-pw2').value,err=$('#su-err');
+    if(name.length<2){err.textContent=b('নাম ২+','Name 2+');return}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent=b('সঠিক ইমেইল','Valid email');return}
+    if(!/^\d{8,15}$/.test(phone.replace(/\D/g,''))){err.textContent=b('সঠিক নম্বর','Valid phone');return}
+    if(store.users.find(u=>u.phone===phone)){err.textContent=b('এই নম্বরে অ্যাকাউন্ট আছে','Account exists');return}
+    if(pw.length<6){err.textContent=b('পাসওয়ার্ড ৬+','Password 6+');return}
+    if(pw!==pw2){err.textContent=b('মেলে না','Not match');return}
+    const u={
+      name,email,phone,country,pwHash:hashPw(pw),
+      realBalance:STARTING_BDT,heldCoins:0,totalBought:0,
+      addr:'KCT1q'+Math.random().toString(36).slice(2,10).toUpperCase()+phone.slice(-4),
+      uid:genUid(),
+      color:hs(phone)%6,nick:'@'+name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12),
+      bio:'',pin:null,
+      verified:{email:true,phone:false,profile:false},
+      contacts:[],tx:[],deposits:[],
+      tips:[5,10,25],notif:{send:true,receive:true,reward:true},
+      ref:{code:'KCT-'+phone.slice(-4),earn:0,count:0},
+      sendLog:[]
+    };
+    store.users.push(u);store.session=phone;store.admin=false;save();beep();
+    toast(b('স্বাগতম! আপনার ID: '+u.uid,'Welcome! Your ID: '+u.uid));
+    render();return;
+  }
+  if(e.target.id==='binanceform'){
+    const amt=parseFloat($('#bin-amt').value)||0,trx=$('#bin-trx').value.trim();
+    if(!store.settings.depositsEnabled){$('#bin-err').textContent=b('ডিপোজিট বন্ধ','Deposits disabled');return}
+    if(amt<1){$('#bin-err').textContent=b('সর্বনিম্ন ১ USDT','Min 1 USDT');return}
+    if(!trx||trx.length<6){$('#bin-err').textContent=b('TxID দিন','Provide TxID');return}
+    const bdtAmt=r2(amt*BDT_PER_USD);
+    const a=S();a.deposits=a.deposits||[];
+    a.deposits.push({id:depId(),method:'binance',bdt:bdtAmt,usdt:amt,trxid:trx,status:'Pending',ts:NOW()});
+    save();beep();toast(b('রিকোয়েস্ট জমা','Request sent'));render();return;
+  }
+  if(e.target.id==='bkashform'){
+    const amt=parseFloat($('#bk-amt').value)||0,trx=$('#bk-trx').value.trim();
+    if(!isBdUser()){$('#bk-err').textContent=b('শুধু বাংলাদেশ','Bangladesh only');return}
+    if(!store.settings.depositsEnabled){$('#bk-err').textContent=b('ডিপোজিট বন্ধ','Deposits disabled');return}
+    if(amt<store.settings.minDeposit){$('#bk-err').textContent=b(`সর্বনিম্ন ৳${store.settings.minDeposit}`,`Min ৳${store.settings.minDeposit}`);return}
+    if(!trx||trx.length<6){$('#bk-err').textContent=b('TrxID দিন','Provide TrxID');return}
+    const a=S();a.deposits=a.deposits||[];
+    a.deposits.push({id:depId(),method:'bkash',bdt:amt,trxid:trx,status:'Pending',ts:NOW()});
+    save();beep();toast(b('রিকোয়েস্ট জমা','Request sent'));render();return;
+  }
+  if(e.target.id==='sendform'){
+    if(maintBlock())return;
+    const p=sendPreview();if(!p)return;
+    if(!validTo(p.to)){$('#s-err').textContent=b('ফরম্যাট','Format');return}
+    if(!(p.amt>0)){$('#s-err').textContent=b('পরিমাণ','Amount');return}
+    if(p.err)return;
+    confirmSend(p.to,p.amt,$('#s-note').value.trim(),$('#s-cat').value);
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='s-amt'||t.id==='s-to')sendPreview();
+  if(t.id==='buy-bdt')previewBuy();
+  if(t.id==='sell-utc')previewSell();
+  if(t.dataset.f&&t.tagName==='INPUT'&&t.type!=='date'){F[t.dataset.f]=t.value;const h=$('#hist');if(h)h.innerHTML=histBody()}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.f){F[t.dataset.f]=t.value;const h=$('#hist');if(h)h.innerHTML=histBody();return}
+  const k=t.dataset.in;if(!k)return;
+  if(k==='sound')store.sound=t.checked;
+  else if(k==='maint')store.settings.maintenance=t.checked;
+  else if(k==='dep-en')store.settings.depositsEnabled=t.checked;
+  else if(k==='bin-en')store.settings.binanceEnabled=t.checked;
+  else if(k==='bk-en')store.settings.bkashEnabled=t.checked;
+  else if(k==='reveal-supply')store.settings.revealSupply=t.checked;
+  save();if(k==='maint'||k==='reveal-supply'||k.startsWith('dep-')||k.startsWith('bin-')||k.startsWith('bk-'))render();
+});
+window.addEventListener('hashchange',render);
+
+if(!location.hash)try{history.replaceState(null,'','#home')}catch(e){}
+render();
+})();
+</script>
+</body>
+</html>

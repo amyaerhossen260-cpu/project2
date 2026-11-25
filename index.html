@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 :root{
   --bg:#0a0d14; --surface:#111722; --surface2:#181f2e; --line:#232c3f;
@@ -100,6 +103,9 @@ main{padding-top:20px;display:grid;gap:16px}
 .btn.buy{background:linear-gradient(180deg,#3ecf8e,#0e8a5c);color:#fff;border-color:transparent;font-weight:600}
 .btn.sell{background:linear-gradient(180deg,#f2646f,#c9323f);color:#fff;border-color:transparent;font-weight:600}
 .btn.tg{background:linear-gradient(180deg,#2ab8e8,#1d8fc0);color:#fff;border-color:transparent;font-weight:600}
+.btn.google{background:#fff;color:#111;border-color:#dadce0;font-weight:600}
+.btn.google:hover{border-color:#111;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.btn.google svg{width:18px;height:18px}
 .btn.danger{color:var(--bad)}
 .btn.sm{padding:5px 10px;min-height:32px;font-size:.84rem}
 .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -165,10 +171,12 @@ details p{margin-top:8px;color:var(--muted);font-size:.9rem}
 .pending-badge{background:var(--warn);color:#1d1400;font-weight:700;font-size:.68rem;padding:2px 7px;border-radius:99px;letter-spacing:.02em}
 
 .auth-screen{min-height:calc(100dvh - 40px);display:grid;place-items:center;padding:30px 0}
-.auth-box{max-width:460px;width:100%;display:grid;gap:18px;justify-items:center}
+.auth-box{max-width:460px;width:100%;display:grid;gap:16px;justify-items:center}
 .auth-box svg.big{width:140px;height:140px;filter:drop-shadow(0 16px 28px rgba(245,185,58,.45));animation:float 6s ease-in-out infinite}
 .auth-title{text-align:center;font-size:2rem;font-weight:700;letter-spacing:-.02em}
 .auth-sub{text-align:center;font-size:.82rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.auth-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;margin:4px 0;width:100%}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--line)}
 .notice{border:1px solid color-mix(in srgb,var(--warn) 50%,var(--line));background:color-mix(in srgb,var(--warn) 9%,transparent);border-radius:12px;padding:10px 14px;font-size:.86rem;line-height:1.6}
 .notice.info{border-color:color-mix(in srgb,var(--info) 50%,var(--line));background:color-mix(in srgb,var(--info) 8%,transparent)}
 .notice.good{border-color:color-mix(in srgb,var(--good) 50%,var(--line));background:color-mix(in srgb,var(--good) 8%,transparent)}
@@ -176,6 +184,11 @@ details p{margin-top:8px;color:var(--muted);font-size:.9rem}
 .tg-help{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#2ab8e8,#1d8fc0);color:#fff;border:none;border-radius:99px;padding:12px 18px;font-weight:600;font-size:.9rem;cursor:pointer;box-shadow:0 12px 30px -8px rgba(42,184,232,.6);transition:.2s;text-decoration:none}
 .tg-help:hover{transform:translateY(-2px);box-shadow:0 16px 36px -8px rgba(42,184,232,.8)}
 .tg-help svg{width:20px;height:20px;fill:#fff}
+
+.sync-dot{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted)}
+.sync-dot i{width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync-dot.on i{background:var(--good);box-shadow:0 0 8px var(--good)}
+.sync-dot.off i{background:var(--bad)}
 
 @media (max-width:620px){
   .hero{grid-template-columns:1fr;justify-items:start}
@@ -228,17 +241,29 @@ details p{margin-top:8px;color:var(--muted);font-size:.9rem}
 'use strict';
 
 /* ============================================================
-   PRICING MODEL
-   ------------------------------------------------------------
-   Coin #1  → +0.001%   (price × 1.00001)
-   Coin #2  → +0.002%
-   ...
-   Coin #10 → +0.010%
-   ...
-   Coin #100 → +0.100%  (price × 1.001)
-   Coin #101 and beyond → +৳1 per coin (linear)
-   
-   Starting price ৳10  →  after 100 coins ≈ ৳10.52  →  after 250,000 ≈ ৳249,910
+   FIREBASE — NEW CONFIG
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyALOAGz5I10gcBRwTS9qCL7uLPsX_mmQ5Y",
+  authDomain: "kct-coin.firebaseapp.com",
+  databaseURL: "https://kct-coin-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kct-coin",
+  storageBucket: "kct-coin.firebasestorage.app",
+  messagingSenderId: "577608407943",
+  appId: "1:577608407943:web:b8ab030b787be1663f9122",
+  measurementId: "G-131BEVQY0P"
+};
+let fbAuth = null, fbDb = null;
+try {
+  if (window.firebase) {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth = firebase.auth();
+    fbDb   = firebase.database();
+  }
+} catch (e) { console.warn('Firebase init failed:', e); }
+
+/* ============================================================
+   PRICING
    ============================================================ */
 const TOTAL_SUPPLY   = 250000;
 const BDT_PER_USD    = 122;
@@ -247,20 +272,14 @@ const GROWTH_CAP     = 100;
 const PER_COIN_UNIT  = 0.00001;
 const FIXED_AFTER    = 1;
 
-// Precompute price & cumulative cost arrays
 const PRICES  = new Float64Array(TOTAL_SUPPLY + 1);
 const CUMCOST = new Float64Array(TOTAL_SUPPLY + 1);
-PRICES[0]  = BASE_PRICE;
-CUMCOST[0] = 0;
+PRICES[0]=BASE_PRICE; CUMCOST[0]=0;
 for (let i = 1; i <= TOTAL_SUPPLY; i++) {
   CUMCOST[i] = CUMCOST[i-1] + PRICES[i-1];
-  if (i <= GROWTH_CAP) {
-    PRICES[i] = PRICES[i-1] * (1 + i * PER_COIN_UNIT);
-  } else {
-    PRICES[i] = PRICES[i-1] + FIXED_AFTER;
-  }
+  if (i <= GROWTH_CAP) PRICES[i] = PRICES[i-1] * (1 + i * PER_COIN_UNIT);
+  else                PRICES[i] = PRICES[i-1] + FIXED_AFTER;
 }
-
 function priceBdt(sold){
   if (sold <= 0) return BASE_PRICE;
   if (sold >= TOTAL_SUPPLY) return PRICES[TOTAL_SUPPLY];
@@ -291,16 +310,16 @@ function solveSell(utc, sold){
   return cumCost(sold) - cumCost(Math.max(0, sold - utc));
 }
 
-const STARTING_BDT = 0;
+const STARTING_BDT  = 0;
+const MIN_WITHDRAW  = 100;
 const FEE_RATE = 0.001, MIN_FEE = 0.01;
-const KEY = 'kct-coin-v7';
+const KEY = 'kct-coin-v8';
 
 const BKASH_NUMBER          = '01316344463';
 const BINANCE_ID            = '976102094';
 const BINANCE_REGISTER_URL  = 'https://account.binance.com/register?ref=976102094&?registerChannel=user_center';
-const BINANCE_NETWORK       = 'Binance Pay';
 const TELEGRAM_URL          = 'https://t.me/+8801316344463';
-const ADMIN_PASSWORD        = 'UMAYER12';
+const ADMIN_PASSWORD        = 'UMAYER12@';
 
 const COUNTRIES = {
   BD:{flag:'🇧🇩',name:'বাংলাদেশ'}, IN:{flag:'🇮🇳',name:'ভারত'},
@@ -319,14 +338,13 @@ const f=(n,d=2)=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,ma
 const r2=x=>Math.round(x*100)/100;
 function hs(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
 function txid(){const ch='0123456789abcdef';let s='0x';for(let i=0;i<40;i++)s+=ch[Math.floor(Math.random()*16)];return s}
-function depId(){return 'DEP-'+Math.random().toString(36).slice(2,8).toUpperCase()}
+function depId(p){return (p||'DEP')+'-'+Math.random().toString(36).slice(2,8).toUpperCase()}
 const short=a=>a&&a.length>18?a.slice(0,9)+'…'+a.slice(-6):a;
 const NOW=()=>Date.now(), DAY=864e5;
 function hashPw(pw){let h=5381;for(let i=0;i<pw.length;i++)h=((h<<5)+h+pw.charCodeAt(i))|0;return'h'+Math.abs(h).toString(36)+'_'+pw.length}
 
 function shortBdt(n){
-  n=Number(n)||0;
-  const abs=Math.abs(n);
+  n=Number(n)||0; const abs=Math.abs(n);
   if(abs>=1e7) return '৳'+(n/1e6).toFixed(1)+'M';
   if(abs>=1e6) return '৳'+(n/1e6).toFixed(2)+'M';
   if(abs>=1e4) return '৳'+(n/1e3).toFixed(0)+'K';
@@ -336,8 +354,7 @@ function shortBdt(n){
   return '৳'+(+n.toFixed(6));
 }
 function shortUsd(n){
-  n=Number(n)||0;
-  const abs=Math.abs(n);
+  n=Number(n)||0; const abs=Math.abs(n);
   if(abs>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
   if(abs>=1e3) return '$'+(n/1e3).toFixed(2)+'K';
   if(abs>=1)   return '$'+(+n.toFixed(4));
@@ -356,15 +373,10 @@ function seedStore(){
   return {
     lang:'bn', theme:'auto', sound:true, admin:false,
     session:null, users:[],
+    lastUpdated: 0,
     settings:{
-      maintenance:false,
-      depositsEnabled:true,
-      binanceEnabled:true,
-      bkashEnabled:true,
-      minDeposit:100,
-      maxDeposit:500000,
-      notice:'',
-      revealSupply:false
+      maintenance:false, depositsEnabled:true, binanceEnabled:true, bkashEnabled:true,
+      minDeposit:100, maxDeposit:500000, notice:'', revealSupply:false
     },
     market:{
       soldSupply:0, burned:0,
@@ -376,7 +388,32 @@ let store;
 try{store=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){store=null}
 if(!store||!store.users||!store.settings)store=seedStore();
 if(store.settings && store.settings.revealSupply === undefined) store.settings.revealSupply = false;
-function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
+if(!store.lastUpdated) store.lastUpdated = 0;
+
+(function migrate(){
+  let m=false;
+  store.users.forEach(u=>{
+    if(!u.uid){u.uid=genUid();m=true;}
+    if(u.totalBought===undefined){u.totalBought=0;m=true;}
+    if(!u.withdrawals){u.withdrawals=[];m=true;}
+    if(u.fbUid===undefined){u.fbUid=null;m=true;}
+  });
+  if(m) saveLocal();
+})();
+
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
+
+let saveTimer=null;
+function save(){
+  store.lastUpdated = NOW();
+  saveLocal();
+  if (fbDb) {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      try { fbDb.ref('kct/store').set(store).catch(()=>{}); } catch(e){}
+    }, 800);
+  }
+}
 function S(){return store.users.find(u=>u.phone===store.session)||null}
 const b=(bn,en)=>store.lang==='en'?en:bn;
 function isBdUser(){const a=S();return a&&a.country==='BD'}
@@ -389,14 +426,38 @@ function genUid(){
   while(store.users.some(u=>u.uid===id));
   return id;
 }
-(function(){
-  let m=false;
-  store.users.forEach(u=>{
-    if(!u.uid){u.uid=genUid();m=true;}
-    if(u.totalBought===undefined){u.totalBought=0;m=true;}
-  });
-  if(m)save();
-})();
+
+/* ============ FIREBASE SYNC ============ */
+let syncStatus = 'idle';
+async function syncFromFirebase(){
+  if (!fbDb) { syncStatus='disabled'; return; }
+  syncStatus = 'syncing';
+  try {
+    const snap = await fbDb.ref('kct/store').once('value');
+    const data = snap.val();
+    if (data && Array.isArray(data.users) && data.users.length > 0) {
+      const remoteTs = data.lastUpdated || 0;
+      const localTs  = store.lastUpdated || 0;
+      if (remoteTs > localTs + 1500) {
+        store = data;
+        store.users.forEach(u=>{
+          if(!u.uid) u.uid = genUid();
+          if(u.totalBought===undefined) u.totalBought = 0;
+          if(!u.withdrawals) u.withdrawals = [];
+          if(u.fbUid===undefined) u.fbUid = null;
+        });
+        saveLocal();
+        syncStatus = 'synced';
+        render();
+        return;
+      }
+    }
+    syncStatus = 'synced';
+  } catch(e) {
+    console.warn('Firebase sync failed:', e);
+    syncStatus = 'error';
+  }
+}
 
 /* ============ FORMAT ============ */
 const when=ts=>new Date(ts).toLocaleString(store.lang==='en'?'en-GB':'bn-BD',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -415,7 +476,8 @@ const IC={
   out:icon('<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>'),
   copy:icon('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>'),
   lock:icon('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
-  trophy:icon('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 4h3v3a3 3 0 0 1-3 3M7 4H4v3a3 3 0 0 0 3 3"/>')
+  cloud:icon('<path d="M18 17H7a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.4A4 4 0 0 1 18 17z"/>'),
+  send:icon('<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>')
 };
 
 /* ============ TOAST/MODAL ============ */
@@ -438,8 +500,7 @@ function series(tfKey){
   const hist=store.market.priceHistory;
   const N={'1H':40,'24H':60,'7D':70,'1M':80,'ALL':100}[tfKey]||60;
   const span={'1H':36e5,'24H':DAY,'7D':7*DAY,'1M':30*DAY,'ALL':Math.max(DAY,(hist[hist.length-1].t-hist[0].t))}[tfKey]||DAY;
-  const now=NOW(),start=now-span,pts=[];
-  let last=hist[0].p;
+  const now=NOW(),start=now-span,pts=[];let last=hist[0].p;
   for(let i=0;i<N;i++){
     const t=start+(span*i)/(N-1);let v=last;
     for(let j=0;j<hist.length;j++){
@@ -477,7 +538,7 @@ function drawChart(){
   el.onpointerleave=()=>{const g=$('#tip',el);if(g)g.style.display='none'};
 }
 
-/* ============ LIVE VALUES ============ */
+/* ============ LIVE ============ */
 function change24(){
   const hist=store.market.priceHistory,cut=NOW()-DAY;
   let old=BASE_PRICE;
@@ -510,19 +571,15 @@ function liveVals(){
 }
 
 /* ============ VIEWS ============ */
-const NAMES={home:['ওভারভিউ','Overview'],wallet:['ওয়ালেট','Wallet'],deposit:['ব্যালেন্স অ্যাড','Add Balance'],market:['মার্কেট','Market'],leaderboard:['লিডারবোর্ড','Leaderboard'],activity:['হিস্টোরি','History'],account:['সেটিংস','Settings'],admin:['অ্যাডমিন','Admin']};
-const ROUTES=['home','wallet','deposit','market','leaderboard','activity','account','admin'];
+const NAMES={home:['ওভারভিউ','Overview'],wallet:['ওয়ালেট','Wallet'],deposit:['ব্যালেন্স অ্যাড','Add Balance'],withdraw:['উত্তোলন','Withdraw'],market:['মার্কেট','Market'],leaderboard:['লিডারবোর্ড','Leaderboard'],activity:['হিস্টোরি','History'],account:['সেটিংস','Settings'],admin:['প্যানেল','Admin']};
+const ROUTES=['home','wallet','deposit','withdraw','market','leaderboard','activity','account','admin'];
 const route=()=>{const h=location.hash.replace('#','');return ROUTES.includes(h)&&(h!=='admin'||isAdmin())?h:'home'};
 
 function statCard(k,v,sub,live){
-  return `<div class="stat">
-    <div class="k">${k}</div>
-    <div class="v num" ${live?`data-live="${live}"`:''}>${v}</div>
-    ${sub?`<div class="sub">${sub}</div>`:''}
-  </div>`;
+  return `<div class="stat"><div class="k">${k}</div><div class="v num" ${live?`data-live="${live}"`:''}>${v}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
 }
 
-const TXT={sent:['পাঠানো','Sent'],received:['প্রাপ্ত','Received'],reward:['রিওয়ার্ড','Reward'],buy:['কেনা','Buy'],sell:['বিক্রি','Sell'],stake:['স্টেক','Stake'],deposit:['ডিপোজিট','Deposit'],withdraw:['উইথড্র','Withdraw']};
+const TXT={sent:['পাঠানো','Sent'],received:['প্রাপ্ত','Received'],reward:['রিওয়ার্ড','Reward'],buy:['কেনা','Buy'],sell:['বিক্রি','Sell'],stake:['স্টেক','Stake'],deposit:['ডিপোজিট','Deposit'],withdraw:['উত্তোলন','Withdraw']};
 const txType=t=>b((TXT[t]||TXT.sent)[0],(TXT[t]||TXT.sent)[1]);
 const stCls=s=>s==='Completed'?'good':s==='Pending'?'warn':'bad';
 const stTxt=s=>s==='Completed'?b('সম্পন্ন','Completed'):s==='Pending'?b('পেন্ডিং','Pending'):s==='Rejected'?b('বাতিল','Rejected'):b('ব্যর্থ','Failed');
@@ -544,15 +601,12 @@ function txRow(t){
 
 /* ---------- LEADERBOARD ---------- */
 function topBuyers(limit){
-  return store.users
-    .filter(u=>u.totalBought>0)
-    .sort((a,b)=>(b.totalBought||0)-(a.totalBought||0))
-    .slice(0, limit || 100);
+  return store.users.filter(u=>u.totalBought>0).sort((a,b)=>(b.totalBought||0)-(a.totalBought||0)).slice(0, limit||100);
 }
 function leaderboardRows(buyers){
   if(!buyers.length) return `<p class="muted" style="padding:16px 0;text-align:center">${b('এখনো কোনো ক্রেতা নেই','No buyers yet')}</p>`;
   return buyers.map((u,i)=>{
-    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
     return `<div class="item" style="padding:10px 14px">
       <div class="row" style="min-width:0">
         <span style="width:32px;text-align:center;font-weight:800;font-family:var(--f-head);color:${i<3?'var(--gold)':'var(--muted)'};font-size:${i<3?'1.1rem':'.92rem'}">${medal}</span>
@@ -568,8 +622,8 @@ function leaderboardRows(buyers){
 function vLeaderboard(){
   const buyers=topBuyers(100);
   return `<section class="card">
-    <header><h2>🏆 ${b('টপ ১০০ ক্রেতা','Top 100 Buyers')}</h2><span class="small muted">${b('মোট কেনা কয়েন','Total coins bought')}</span></header>
-    <p class="small muted" style="margin-bottom:12px">${b('যারা সব থেকে বেশি KCT কিনেছেন তাদের তালিকা। শুধু টপ ১০০ জন দেখানো হচ্ছে।','Ranking of the biggest KCT buyers. Only top 100 are shown.')}</p>
+    <header><h2>🏆 ${b('টপ ১০০ ক্রেতা','Top 100 Buyers')}</h2></header>
+    <p class="small muted" style="margin-bottom:12px">${b('যারা সব থেকে বেশি KCT কিনেছেন।','Biggest KCT buyers.')}</p>
     <div class="list">${leaderboardRows(buyers)}</div>
   </section>`;
 }
@@ -585,6 +639,7 @@ function vHome(){
   const a=S(),P=priceBdt(store.market.soldSupply),U=priceUsd(store.market.soldSupply),pk=tier();
   const recent=a.tx.slice().sort((x,y)=>y.ts-x.ts).slice(0,5);
   const pendingDeps=(a.deposits||[]).filter(d=>d.status==='Pending').length;
+  const pendingWds=(a.withdrawals||[]).filter(w=>w.status==='Pending').length;
   const totBdt=a.realBalance+a.heldCoins*P;
   const top5=topBuyers(5);
   const showSupply=supplyVisible();
@@ -609,9 +664,10 @@ function vHome(){
         <a class="btn pri" href="#deposit">${b('+ ব্যালেন্স অ্যাড','+ Add Balance')}</a>
         <a class="btn buy" href="#market">${b('কিনুন','Buy KCT')}</a>
         <a class="btn sell" href="#market">${b('বিক্রি','Sell KCT')}</a>
-        <a class="btn" href="#wallet">${b('পাঠান','Send')}</a>
+        <a class="btn" href="#withdraw">${IC.send} ${b('উত্তোলন','Withdraw')}</a>
       </div>
-      ${pendingDeps?`<div class="notice info" style="margin-top:12px">⏳ ${b('আপনার','You have')} ${pendingDeps} ${b('টি ডিপোজিট অনুমোদনের অপেক্ষায়।','deposit(s) pending approval.')}</div>`:''}
+      ${pendingDeps?`<div class="notice info" style="margin-top:12px">⏳ ${pendingDeps} ${b('টি ডিপোজিট পেন্ডিং','deposit(s) pending')}</div>`:''}
+      ${pendingWds?`<div class="notice" style="margin-top:12px">💸 ${pendingWds} ${b('টি উত্তোলন পেন্ডিং','withdrawal(s) pending')}</div>`:''}
     </div>
   </section>
   ${store.settings.notice?`<div class="notice info">📢 ${esc(store.settings.notice)}</div>`:''}
@@ -645,25 +701,13 @@ function vHome(){
   </section>
 
   <section class="grid g2">
-    <div class="card"><header><h2>🏆 ${b('টপ ক্রেতা','Top Buyers')}</h2><button class="btn sm" data-act="openleaderboard">${b('সব ১০০ দেখুন','View Top 100')}</button></header>
-      <div class="list">${leaderboardRows(top5)}</div>
-    </div>
+    <div class="card"><header><h2>🏆 ${b('টপ ক্রেতা','Top Buyers')}</h2><button class="btn sm" data-act="openleaderboard">${b('সব ১০০','Top 100')}</button></header>
+      <div class="list">${leaderboardRows(top5)}</div></div>
     <div class="card"><header><h2>💳 ${b('ব্যালেন্স অ্যাড','Add Balance')}</h2><a class="btn sm" href="#deposit">${b('খুলুন','Open')}</a></header>
       <div class="list">
-        <a class="item" href="#deposit" style="cursor:pointer">
-          <div><div class="t"><strong>₿ Binance Pay</strong></div><div class="small muted">${b('ID','ID')}: <strong style="color:#f3ba2f">${BINANCE_ID}</strong></div></div>
-          <span class="tag info">${b('ডিপোজিট','Deposit')}</span>
-        </a>
-        ${isBdUser()?`<a class="item" href="#deposit" style="cursor:pointer">
-          <div><div class="t"><strong>৳ bKash / Nagad</strong></div><div class="small muted">${BKASH_NUMBER}</div></div>
-          <span class="tag good">${b('ডিপোজিট','Deposit')}</span>
-        </a>`:''}
-        <a class="item" href="${TELEGRAM_URL}" target="_blank" rel="noopener" style="cursor:pointer">
-          <div><div class="t"><strong>✈️ Telegram Helpline</strong></div><div class="small muted">${b('২৪/৭ সাপোর্ট','24/7 support')}</div></div>
-          <span class="tag info">${b('খুলুন','Open')}</span>
-        </a>
-      </div>
-    </div>
+        <a class="item" href="#deposit" style="cursor:pointer"><div><div class="t"><strong>₿ Binance Pay</strong></div><div class="small muted">${b('ID','ID')}: <strong style="color:#f3ba2f">${BINANCE_ID}</strong></div></div><span class="tag info">${b('ডিপোজিট','Deposit')}</span></a>
+        ${isBdUser()?`<a class="item" href="#deposit" style="cursor:pointer"><div><div class="t"><strong>৳ bKash / Nagad</strong></div><div class="small muted">${BKASH_NUMBER}</div></div><span class="tag good">${b('ডিপোজিট','Deposit')}</span></a>`:''}
+      </div></div>
   </section>
 
   <section class="card"><header><h2>${b('সাম্প্রতিক','Recent')}</h2><a class="btn sm" href="#activity">${b('সব','View all')}</a></header>
@@ -685,26 +729,26 @@ function vDeposit(){
       <div class="method ${depositMethod==='bkash'?'on':''}" data-act="depmethod" data-v="bkash">
         <div class="ic" style="background:#e2136e;color:#fff">৳</div>
         <div class="name">bKash / Nagad</div>
-        <div class="desc">${b('শুধু বাংলাদেশ — নম্বর:','Bangladesh only — number:')} ${BKASH_NUMBER}</div>
+        <div class="desc">${b('শুধু বাংলাদেশ — নম্বর:','BD only — number:')} ${BKASH_NUMBER}</div>
       </div>`:'';
   return `
   <section class="grid g2">
     <div class="card form">
       <header><h2>${b('ব্যালেন্স অ্যাড করুন','Add Balance')}</h2></header>
-      ${!s.depositsEnabled?`<div class="notice">${b('ডিপোজিট সাময়িকভাবে বন্ধ','Deposits temporarily disabled')}</div>`:`
+      ${!s.depositsEnabled?`<div class="notice">${b('ডিপোজিট বন্ধ','Deposits disabled')}</div>`:`
       <div class="method-grid">${binHTML}${bkHTML}</div>
       <div style="margin-top:16px">${depositMethod==='binance'?binanceForm():bkashForm()}</div>`}
     </div>
     <div class="grid" style="align-content:start">
-      <div class="card"><header><h2>${b('কীভাবে কাজ করে','How it works')}</h2></header>
+      <div class="card"><header><h2>${b('কীভাবে','How it works')}</h2></header>
         <div class="list">
-          <div class="item"><div><div class="t"><strong>1. ${b('পেমেন্ট','Send payment')}</strong></div><div class="small muted">${b('Binance ID বা bKash নম্বরে','To Binance ID or bKash number')}</div></div></div>
-          <div class="item"><div><div class="t"><strong>2. ${b('প্রমাণ দিন','Submit proof')}</strong></div><div class="small muted">${b('TxID / TrxID দিন','Provide TxID / TrxID')}</div></div></div>
+          <div class="item"><div><div class="t"><strong>1. ${b('পেমেন্ট','Send payment')}</strong></div><div class="small muted">${b('Binance ID বা bKash নম্বরে','To Binance ID or bKash')}</div></div></div>
+          <div class="item"><div><div class="t"><strong>2. ${b('TxID দিন','Submit TxID')}</strong></div></div></div>
           <div class="item"><div><div class="t"><strong>3. ${b('অ্যাডমিন অনুমোদন','Admin approves')}</strong></div><div class="small muted">${b('৫-১৫ মিনিটে','Within 5-15 min')}</div></div></div>
-          <div class="item"><div><div class="t"><strong>4. ${b('KCT কিনুন','Buy KCT')}</strong></div><div class="small muted">${b('মার্কেট থেকে','From market')}</div></div></div>
+          <div class="item"><div><div class="t"><strong>4. ${b('KCT কিনুন','Buy KCT')}</strong></div></div></div>
         </div></div>
       <div class="card"><header><h2>${b('পেন্ডিং','Pending')}</h2></header>
-        <div class="list">${pending.length?pending.map(d=>`<div class="item"><div><div class="t"><strong>৳${f(d.bdt)}</strong> · ${d.method==='binance'?'Binance':'bKash'}</div><div class="small muted">${when(d.ts)} · ${esc(d.trxid)}</div></div><span class="tag warn">${b('পেন্ডিং','Pending')}</span></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending deposits')}</p>`}</div>
+        <div class="list">${pending.length?pending.map(d=>`<div class="item"><div><div class="t"><strong>৳${f(d.bdt)}</strong> · ${d.method==='binance'?'Binance':'bKash'}</div><div class="small muted">${when(d.ts)} · ${esc(d.trxid)}</div></div><span class="tag warn">${b('পেন্ডিং','Pending')}</span></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending')}</p>`}</div>
       </div>
     </div>
   </section>`;
@@ -716,20 +760,19 @@ function binanceForm(){
       <div class="id num">${BINANCE_ID}</div>
       <div class="row" style="gap:8px;margin-top:4px">
         <button type="button" class="btn sm" data-act="copybinid">${b('ID কপি','Copy ID')}</button>
-        <button type="button" class="btn sm" data-act="binqr">${b('QR দেখুন','Show QR')}</button>
+        <button type="button" class="btn sm" data-act="binqr">QR</button>
       </div>
       <p class="small muted" style="margin-top:10px;line-height:1.6">
-        <strong>${b('কীভাবে পেমেন্ট করবেন','How to pay')}:</strong><br>
-        Binance App → <b>Pay</b> → <b>Send</b> → ${b('ID লিখুন','Enter ID')}: <b>${BINANCE_ID}</b> → ${b('পরিমাণ দিন → সেন্ড','enter amount → send')}
+        Binance App → <b>Pay</b> → <b>Send</b> → ${b('ID লিখুন','Enter ID')}: <b>${BINANCE_ID}</b> → ${b('পরিমাণ → সেন্ড','amount → send')}
       </p>
     </div>
     <div class="notice good" style="font-size:.8rem">
-      ${b('Binance অ্যাকাউন্ট নেই?','No Binance account?')} 
-      <a href="${BINANCE_REGISTER_URL}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:700">${b('রেজিস্টার করুন →','Register here →')}</a>
+      ${b('Binance অ্যাকাউন্ট নেই?','No Binance account?')}
+      <a href="${BINANCE_REGISTER_URL}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:700">${b('রেজিস্টার →','Register →')}</a>
     </div>
-    <label class="f">${b('পরিমাণ (BDT সমতুল্য USDT)','Amount (USDT, BDT equivalent)')}
+    <label class="f">${b('পরিমাণ (USDT)','Amount (USDT)')}
       <input class="in num" id="bin-amt" type="number" min="1" step="0.01" placeholder="50" required></label>
-    <label class="f">${b('Binance TxID','Binance TxID')}<input class="in" id="bin-trx" placeholder="0x..." required></label>
+    <label class="f">Binance TxID<input class="in" id="bin-trx" placeholder="0x..." required></label>
     <p class="small bad" id="bin-err"></p>
     <button class="btn pri" type="submit">${b('ডিপোজিট রিকোয়েস্ট','Request deposit')}</button>
   </form>`;
@@ -739,15 +782,72 @@ function bkashForm(){
     <label class="f">${b('পরিমাণ (৳)','Amount (৳)')}
       <input class="in num" id="bk-amt" type="number" min="100" step="1" placeholder="500" required></label>
     <div class="notice" style="font-size:.82rem;background:linear-gradient(135deg,#e2136e15,#e2136e05);border-color:#e2136e60">
-      <strong style="color:#e2136e">bKash / Nagad</strong> — ${b('সেন্ড মানি করুন','Send Money to')}<br>
+      <strong style="color:#e2136e">bKash / Nagad</strong> — ${b('সেন্ড মানি','Send Money')}<br>
       <code style="font-size:1.15rem;font-weight:700;letter-spacing:.04em;display:inline-block;margin:4px 0">${BKASH_NUMBER}</code>
-      <button type="button" class="btn sm" style="margin-left:8px" data-act="copybk">${b('কপি','Copy')}</button><br>
-      <span class="small">${b('এই নম্বরটি সেভ করুন — অ্যাডমিন যাচাই করবেন','Save this number — admin will verify')}</span>
+      <button type="button" class="btn sm" style="margin-left:8px" data-act="copybk">${b('কপি','Copy')}</button>
     </div>
-    <label class="f">${b('bKash TrxID','bKash TrxID')}<input class="in" id="bk-trx" placeholder="9A7B2C5D1E" required></label>
+    <label class="f">bKash TrxID<input class="in" id="bk-trx" placeholder="9A7B2C5D1E" required></label>
     <p class="small bad" id="bk-err"></p>
     <button class="btn pri" type="submit">${b('ডিপোজিট রিকোয়েস্ট','Request deposit')}</button>
   </form>`;
+}
+
+/* ---------- WITHDRAW ---------- */
+function vWithdraw(){
+  const a=S(),isBD=isBdUser();
+  const pending=(a.withdrawals||[]).filter(w=>w.status==='Pending');
+  const done=(a.withdrawals||[]).filter(w=>w.status!=='Pending').slice(-8).reverse();
+  const regPhone=(a.phone||'').replace(/[^0-9]/g,'');
+  const usdEquiv=a.realBalance/BDT_PER_USD;
+  return `
+  <section class="grid g2">
+    <div class="card form">
+      <header><h2>💸 ${b('উত্তোলন','Withdraw')}</h2></header>
+      <div class="kv card flat" style="padding:12px">
+        <div><span>${b('উত্তোলনযোগ্য','Available')}</span><span class="num" style="color:var(--good)">৳${f(a.realBalance)}</span></div>
+        <div><span>${b('USD সমতুল্য','USD equiv.')}</span><span class="num">${shortUsd(usdEquiv)}</span></div>
+        <div><span>${b('সর্বনিম্ন','Min')}</span><span class="num">৳${MIN_WITHDRAW}</span></div>
+      </div>
+
+      ${isBD?`
+        <div class="notice info" style="font-size:.82rem">
+          <strong>🇧🇩 ${b('বাংলাদেশ','Bangladesh')}</strong> — ${b('bKash বা Nagad দিয়ে উত্তোলন। শুধুমাত্র আপনার রেজিস্টার্ড নম্বরে যাবে।','Withdraw via bKash or Nagad. Only your registered number can receive.')}
+        </div>
+        <label class="f">${b('পদ্ধতি','Method')}
+          <select class="in" id="wd-method">
+            <option value="bkash">bKash</option>
+            <option value="nagad">Nagad</option>
+          </select></label>
+        <label class="f">${b('রেজিস্টার্ড নম্বর (পরিবর্তনযোগ্য নয়)','Registered number (locked)')}
+          <input class="in num" id="wd-phone" value="${esc(regPhone)}" readonly style="background:var(--surface2);cursor:not-allowed"></label>
+      `:`
+        <div class="notice info" style="font-size:.82rem">
+          <strong>🌍 ${b('আন্তর্জাতিক','International')}</strong> — ${b('Binance দিয়ে USDT আকারে উত্তোলন। আপনার Binance ID বা address দিন।','Withdraw via Binance in USDT. Enter your Binance ID or address.')}
+        </div>
+        <label class="f">${b('Binance ID / Address','Binance ID / Address')}
+          <input class="in" id="wd-binance" placeholder="${b('Binance ID বা 0x… address','Binance ID or 0x… address')}" value="${esc((a.withdrawals||[]).slice(-1)[0]?.address||'')}"></label>
+        <p class="small muted" style="margin-top:-4px">${b('USD সমতুল্য USDT আপনার Binance-এ যাবে','USD equivalent in USDT will be sent to your Binance')}</p>
+      `}
+
+      <label class="f">${b('পরিমাণ (৳)','Amount (৳)')}
+        <div class="row" style="flex-wrap:nowrap">
+          <input class="in num" id="wd-amount" type="number" min="${MIN_WITHDRAW}" step="1" placeholder="0" style="font-size:1.15rem">
+          <button class="btn sm" data-act="wdmax" type="button">Max</button>
+        </div>
+      </label>
+      <p class="small bad" id="wd-err"></p>
+      <button class="btn pri" data-act="withdraw" type="button">${b('উত্তোলন রিকোয়েস্ট','Submit withdrawal')}</button>
+    </div>
+
+    <div class="grid" style="align-content:start">
+      <div class="card"><header><h2>${b('পেন্ডিং উত্তোলন','Pending withdrawals')}</h2>${pending.length?`<span class="pending-badge">${pending.length}</span>`:''}</header>
+        <div class="list">${pending.length?pending.map(w=>`<div class="item"><div><div class="t"><strong>৳${f(w.amount)}</strong> · ${w.method}</div><div class="small muted">${when(w.ts)} · ${esc(short(w.address))}</div></div><span class="tag warn">${b('পেন্ডিং','Pending')}</span></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending')}</p>`}</div>
+      </div>
+      <div class="card"><header><h2>${b('হিস্টোরি','History')}</h2></header>
+        <div class="list">${done.length?done.map(w=>`<div class="item"><div><div class="t"><strong>৳${f(w.amount)}</strong> · ${w.method}</div><div class="small muted">${when(w.ts)} · ${esc(short(w.address))}</div></div><span class="tag ${stCls(w.status)}">${stTxt(w.status)}</span></div>`).join(''):`<p class="muted small">${b('এখনও কোনো উত্তোলন নেই','No withdrawals yet')}</p>`}</div>
+      </div>
+    </div>
+  </section>`;
 }
 
 /* ---------- WALLET ---------- */
@@ -759,12 +859,10 @@ function vWallet(){
   <section class="grid g2">
     <form class="card form" id="sendform" autocomplete="off">
       <header><h2>${b('KCT পাঠান','Send KCT')}</h2><span class="small muted">${b('ব্যালেন্স','Balance')}: <b class="num">${f(a.heldCoins)} KCT</b></span></header>
-      <label class="f">${b('প্রাপক (KCT অ্যাড্রেস, @নাম বা ১০-ডিজিট ID)','Recipient (KCT address, @nick or 10-digit ID)')}
-        <input class="in" id="s-to" list="clist" placeholder="KCT1q… / @user / 10-digit ID" value="${esc(pf.to||'')}"></label>
+      <label class="f">${b('প্রাপক','Recipient')}<input class="in" id="s-to" list="clist" placeholder="KCT1q… / @user / 10-digit ID" value="${esc(pf.to||'')}"></label>
       <datalist id="clist">${a.contacts.map(c=>`<option value="${esc(c.addr)}">${esc(c.name)}</option>`).join('')}</datalist>
       <div class="pills">${recents.map(r=>`<button type="button" class="pill" data-act="fillto" data-v="${esc(r)}">${esc(short(r))}</button>`).join('')}${a.contacts.map(c=>`<button type="button" class="pill" data-act="fillto" data-v="${esc(c.addr)}">${esc(c.name)}</button>`).join('')}</div>
-      <label class="f">${b('পরিমাণ (KCT)','Amount (KCT)')}
-        <input class="in num" id="s-amt" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" value="${esc(pf.amt||'')}"></label>
+      <label class="f">${b('পরিমাণ (KCT)','Amount (KCT)')}<input class="in num" id="s-amt" type="number" min="0" step="any" placeholder="0.00" value="${esc(pf.amt||'')}"></label>
       <div class="pills">${[25,50,75].map(p=>`<button type="button" class="pill" data-act="pct" data-v="${p}">${p}%</button>`).join('')}<button type="button" class="pill" data-act="pct" data-v="100">Max</button></div>
       <div class="grid g2" style="gap:10px">
         <label class="f">${b('ক্যাটাগরি','Category')}<select class="in" id="s-cat">${['Transfer','Payment','Tip','Reward'].map(c=>`<option ${pf.cat===c?'selected':''}>${c}</option>`).join('')}</select></label>
@@ -779,7 +877,7 @@ function vWallet(){
     </form>
     <div class="grid" style="align-content:start">
       <div class="card"><header><h2>${b('রিসিভ','Receive')}</h2></header>
-        <p class="small muted">${b('আপনার KCT অ্যাড্রেস','Your KCT address')}</p>
+        <p class="small muted">${b('KCT অ্যাড্রেস','KCT address')}</p>
         <p class="num" style="overflow-wrap:anywhere;margin:6px 0 12px;font-size:.8rem">${esc(a.addr)}</p>
         <div class="kv" style="margin-bottom:10px">
           <div><span>${b('১০-ডিজিট ID','10-digit ID')}</span><span class="num" style="font-weight:800;letter-spacing:.06em;color:var(--gold)">${esc(a.uid||'-')}</span></div>
@@ -810,8 +908,7 @@ function vMarket(){
       <div>
         <div class="supplybar" style="margin-bottom:6px"><i data-live="supply-fill" style="width:${store.market.soldSupply/TOTAL_SUPPLY*100}%"></i></div>
         <div class="row sp small muted"><span>${b('বিক্রি','Sold')}: <b class="num" data-live="sold">${f(store.market.soldSupply,2)}</b> / 250,000</span><span data-live="supply-pct">${(store.market.soldSupply/TOTAL_SUPPLY*100).toFixed(2)}%</span></div>
-      </div>
-    `:''}
+      </div>`:''}
     <svg id="chart" class="chart" viewBox="0 0 640 240" role="img"></svg>
   </section>
 
@@ -823,13 +920,13 @@ function vMarket(){
       <div class="pills">${[100,500,1000,5000,10000].map(x=>`<button type="button" class="pill" data-act="buyquick" data-v="${x}">৳${f(x,0)}</button>`).join('')}</div>
       <div class="kv card flat" style="padding:12px">
         <div><span>${b('পাবেন','You get')}</span><span class="num" id="buy-utc" style="color:var(--good)">0 KCT</span></div>
-        <div><span>${b('ইফেক্টিভ প্রাইস','Effective price')}</span><span class="num" id="buy-avg">৳0.00</span></div>
+        <div><span>${b('ইফেক্টিভ','Effective')}</span><span class="num" id="buy-avg">৳0.00</span></div>
         <div><span>${b('নতুন প্রাইস','New price')}</span><span class="num" id="buy-newprice">—</span></div>
         <div><span>${b('আসল ব্যালেন্স','Real balance')}</span><span class="num">৳${f(a.realBalance)}</span></div>
       </div>
       <p class="small bad" id="buy-err"></p>
       <button class="btn buy" data-act="buygo" type="button">${b('কিনুন','Buy KCT')}</button>
-      ${a.realBalance<100?`<p class="small muted" style="text-align:center;margin-top:8px"><a href="#deposit" style="color:var(--gold)">${b('প্রথমে ব্যালেন্স অ্যাড করুন →','Add balance first →')}</a></p>`:''}
+      ${a.realBalance<100?`<p class="small muted" style="text-align:center;margin-top:8px"><a href="#deposit" style="color:var(--gold)">${b('প্রথমে ব্যালেন্স অ্যাড →','Add balance first →')}</a></p>`:''}
     </div>
     <div class="card form">
       <header><h2>💰 ${b('KCT বিক্রি','Sell KCT')}</h2><span class="small muted">KCT → BDT</span></header>
@@ -838,16 +935,16 @@ function vMarket(){
       <div class="pills">${[25,50,75,100].map(x=>`<button type="button" class="pill" data-act="sellpct" data-v="${x}">${x}%</button>`).join('')}</div>
       <div class="kv card flat" style="padding:12px">
         <div><span>${b('পাবেন','You get')}</span><span class="num" id="sell-bdt" style="color:var(--good)">৳0.00</span></div>
-        <div><span>${b('পাবেন (USD)','Receive (USD)')}</span><span class="num" id="sell-usd">$0.00</span></div>
+        <div><span>${b('USD সমতুল্য','USD equiv.')}</span><span class="num" id="sell-usd">$0.00</span></div>
         <div><span>${b('ইফেক্টিভ','Effective')}</span><span class="num" id="sell-avg">৳0.00</span></div>
-        <div><span>${b('হোল্ড কয়েন','Held')}</span><span class="num">${f(a.heldCoins)} KCT</span></div>
+        <div><span>${b('হোল্ড','Held')}</span><span class="num">${f(a.heldCoins)} KCT</span></div>
       </div>
       <p class="small bad" id="sell-err"></p>
       <button class="btn sell" data-act="sellgo" type="button">${b('বিক্রি','Sell KCT')}</button>
     </div>
   </section>
 
-  <section class="card"><header><h2>🏆 ${b('টপ ক্রেতা','Top Buyers')}</h2><a class="btn sm" href="#leaderboard">${b('সব দেখুন','View all')}</a></header>
+  <section class="card"><header><h2>🏆 ${b('টপ ক্রেতা','Top Buyers')}</h2><a class="btn sm" href="#leaderboard">${b('সব','View all')}</a></header>
     <div class="list">${leaderboardRows(topBuyers(5))}</div>
   </section>`;
 }
@@ -874,7 +971,7 @@ function vActivity(){
     <header><h2>${b('ট্রানজেকশন','Transactions')}</h2><div class="row"><button class="btn sm" data-act="export">${b('এক্সপোর্ট','Export')}</button><button class="btn sm" data-act="clearf">${b('রিসেট','Reset')}</button></div></header>
     <div class="grid g3" style="gap:10px;margin-bottom:14px">
       <input class="in" data-f="q" placeholder="${b('খুঁজুন','Search')}" value="${esc(F.q)}">
-      <select class="in" data-f="type">${o('all','সব','All',F.type)}${o('deposit','ডিপোজিট','Deposit',F.type)}${o('buy','কেনা','Buy',F.type)}${o('sell','বিক্রি','Sell',F.type)}${o('sent','পাঠানো','Sent',F.type)}${o('received','প্রাপ্ত','Received',F.type)}</select>
+      <select class="in" data-f="type">${o('all','সব','All',F.type)}${o('deposit','ডিপোজিট','Deposit',F.type)}${o('withdraw','উত্তোলন','Withdraw',F.type)}${o('buy','কেনা','Buy',F.type)}${o('sell','বিক্রি','Sell',F.type)}${o('sent','পাঠানো','Sent',F.type)}${o('received','প্রাপ্ত','Received',F.type)}</select>
       <select class="in" data-f="status">${o('all','সব','All',F.status)}${o('Completed','সম্পন্ন','Completed',F.status)}${o('Pending','পেন্ডিং','Pending',F.status)}${o('Rejected','বাতিল','Rejected',F.status)}</select>
     </div>
     <div class="tablewrap" id="hist">${histBody()}</div></section>`;
@@ -884,6 +981,7 @@ function vActivity(){
 function toggle(label,key,on){return `<div class="item"><div><div class="t">${label}</div></div><label class="sw"><input type="checkbox" data-in="${key}" ${on?'checked':''}><i></i></label></div>`}
 function vAccount(){
   const a=S(),pk=tier(),c=COUNTRIES[a.country]||COUNTRIES.OT;
+  const loginType = a.fbUid ? 'Google' : b('পাসওয়ার্ড','Password');
   return `
   <div class="uid-banner" style="margin-bottom:16px">
     <div>
@@ -895,7 +993,7 @@ function vAccount(){
   </div>
   <section class="grid g2">
     <div class="card form"><header><h2>${b('প্রোফাইল','Profile')}</h2><span class="tag" style="color:${pk[1]}">${pk[0]}</span></header>
-      <div class="row">${avatar(a,56)}<div style="min-width:0"><div><strong>${esc(a.name)}</strong></div><div class="muted small">${c.flag} ${esc(c.name)} · ${esc(a.nick)}</div></div></div>
+      <div class="row">${avatar(a,56)}<div style="min-width:0"><div><strong>${esc(a.name)}</strong></div><div class="muted small">${c.flag} ${esc(c.name)} · ${esc(a.nick)}</div><div class="small muted">${esc(a.email||'')} · ${loginType}</div></div></div>
       <div class="pills">${COLORS.map((c2,i)=>`<button class="pill ${a.color===i?'on':''}" data-act="color" data-v="${i}" style="width:34px;height:34px;padding:0;background:${c2}" aria-label="${b('রঙ','Colour')} ${i+1}"></button>`).join('')}</div>
       <label class="f">${b('ইউজারনেম','Username')}<input class="in" id="p-nick" value="${esc(a.nick)}" maxlength="24"></label>
       <label class="f">${b('বায়ো','Bio')}<input class="in" id="p-bio" value="${esc(a.bio||'')}" maxlength="80"></label>
@@ -905,24 +1003,16 @@ function vAccount(){
     </div>
     <div class="grid" style="align-content:start">
       <div class="card"><header><h2>${b('পরিসংখ্যান','Stats')}</h2></header>
-        <div class="kv"><div><span>${b('মোট কেনা','Total Bought')}</span><span class="num">${f(a.totalBought||0,2)} KCT</span></div>
-        <div><span>${b('বর্তমান হোল্ডিং','Current Holding')}</span><span class="num">${f(a.heldCoins,2)} KCT</span></div>
-        <div><span>${b('রেফারেল কোড','Referral Code')}</span><span class="num">${a.ref.code}</span></div></div>
-        <div class="row" style="margin-top:12px"><button class="btn sm" data-act="copyref">${b('ইনভাইট','Invite link')}</button></div></div>
+        <div class="kv">
+          <div><span>${b('মোট কেনা','Total Bought')}</span><span class="num">${f(a.totalBought||0,2)} KCT</span></div>
+          <div><span>${b('বর্তমান হোল্ডিং','Current Holding')}</span><span class="num">${f(a.heldCoins,2)} KCT</span></div>
+          <div><span>${b('রেফারেল কোড','Referral Code')}</span><span class="num">${a.ref.code}</span></div>
+        </div>
+        <div class="row" style="margin-top:12px"><button class="btn sm" data-act="copyref">${b('ইনভাইট','Invite')}</button></div></div>
       <div class="card"><header><h2>${b('অ্যাড্রেস বুক','Address book')}</h2></header>
         <div class="list">${a.contacts.map((ct,i)=>`<div class="item"><div><div class="t">${esc(ct.name)}</div><div class="small muted">${esc(short(ct.addr))}</div></div><div class="row"><button class="btn sm" data-act="sendto" data-v="${esc(ct.addr)}">${b('পাঠান','Send')}</button><button class="btn sm danger" data-act="delc" data-v="${i}">✕</button></div></div>`).join('')||`<p class="muted small">${b('খালি','Empty')}</p>`}</div>
         <div class="row" style="margin-top:10px;flex-wrap:nowrap"><input class="in" id="c-name" placeholder="${b('নাম','Name')}" style="max-width:120px"><input class="in" id="c-addr" placeholder="KCT1q…"><button class="btn sm" data-act="addc">${b('যোগ','Add')}</button></div></div>
     </div>
-  </section>
-
-  <section class="card">
-    <header><h2>🔐 ${b('অ্যাডমিন অ্যাক্সেস','Admin Access')}</h2>${store.admin?'<span class="tag gold">ADMIN</span>':''}</header>
-    ${store.admin
-      ? `<div class="notice good">${b('✅ অ্যাডমিন মোড চালু।','✅ Admin mode is on.')}</div>
-         <div class="row" style="margin-top:12px"><a class="btn pri" href="#admin">${IC.lock} ${b('Admin প্যানেল','Open Admin Panel')}</a><button class="btn danger" data-act="adminlock">${b('লক','Lock')}</button></div>`
-      : `<label class="f">${b('অ্যাডমিন পাসওয়ার্ড','Admin password')}<input class="in" type="password" id="admin-pw" placeholder="${b('পাসওয়ার্ড','Password')}" autocomplete="off"></label>
-         <p class="small bad" id="admin-err"></p>
-         <button class="btn pri" data-act="adminunlock" style="margin-top:8px">${IC.lock} ${b('আনলক','Unlock')}</button>`}
   </section>
 
   <section class="grid g2">
@@ -943,25 +1033,39 @@ function vAccount(){
     <header><h2>📱 ${b('হেল্পলাইন','Helpline')}</h2></header>
     <div class="list">
       <a class="item" href="${TELEGRAM_URL}" target="_blank" rel="noopener" style="cursor:pointer">
-        <div class="row"><span style="font-size:22px">✈️</span><div><div class="t"><strong>Telegram Helpline</strong></div><div class="small muted">${b('২৪/৭ লাইভ সাপোর্ট','24/7 live support')}</div></div></div>
+        <div class="row"><span style="font-size:22px">✈️</span><div><div class="t"><strong>Telegram Helpline</strong></div><div class="small muted">${b('২৪/৭ সাপোর্ট','24/7 support')}</div></div></div>
         <span class="btn tg sm">${b('খুলুন','Open')}</span></a>
     </div>
-    <div class="row sp" style="margin-top:14px"><span class="muted small">KCT Coin v1.0</span><button class="btn danger" data-act="reset">${b('লোকাল রিসেট','Reset local')}</button></div>
+    <div class="row sp" style="margin-top:14px">
+      <span class="muted small">KCT Coin v1.0</span>
+      <div class="row">
+        <span class="sync-dot ${syncStatus==='synced'?'on':syncStatus==='error'?'off':''}"><i></i>${syncStatus==='synced'?b('Firebase সিঙ্ক','Firebase synced'):syncStatus==='error'?b('অফলাইন','Offline'):b('কানেক্ট হচ্ছে…','Connecting…')}</span>
+        <button class="btn danger sm" data-act="reset">${b('রিসেট','Reset')}</button>
+      </div>
+    </div>
   </section>`;
 }
 
 /* ---------- ADMIN ---------- */
 function vAdmin(){
-  const allDeps=[];store.users.forEach(u=>{if(u.deposits)u.deposits.forEach(d=>allDeps.push({...d,user:u.name,userPhone:u.phone,userUid:u.uid}))});
-  const pending=allDeps.filter(d=>d.status==='Pending').sort((x,y)=>y.ts-x.ts);
+  const allDeps=[]; store.users.forEach(u=>{if(u.deposits)u.deposits.forEach(d=>allDeps.push({...d,user:u.name,userPhone:u.phone,userUid:u.uid}))});
+  const pendingDeps=allDeps.filter(d=>d.status==='Pending').sort((x,y)=>y.ts-x.ts);
+  const allWds=[]; store.users.forEach(u=>{if(u.withdrawals)u.withdrawals.forEach(w=>allWds.push({...w,user:u.name,userPhone:u.phone,userUid:u.uid}))});
+  const pendingWds=allWds.filter(w=>w.status==='Pending').sort((x,y)=>y.ts-x.ts);
   const s=store.settings;
   return `
   <div class="notice" style="margin-bottom:16px">
-    <strong>⚠️ ${b('অ্যাডমিন কন্ট্রোল প্যানেল','Admin Control Panel')}</strong>
+    <strong>⚠️ ${b('প্যানেল','Panel')}</strong> — ${b('ডিপোজিট ও উত্তোলন অনুমোদন','Deposit & withdrawal approvals')}
   </div>
   <section class="grid g2">
-    <div class="card"><header><h2>${b('পেন্ডিং ডিপোজিট','Pending Deposits')}</h2><span class="pending-badge">${pending.length}</span></header>
-      <div class="list">${pending.length?pending.map(d=>`<div class="item" style="flex-direction:column;align-items:stretch;gap:8px"><div class="row sp"><div><div class="t"><strong>৳${f(d.bdt)}</strong> · ${d.method==='binance'?'₿ Binance':'৳ bKash'}</div><div class="small muted">${esc(d.user)} · ${esc(d.userPhone)}</div><div class="small muted">ID: <code>${esc(d.userUid||'-')}</code></div><div class="small muted">TrxID: <code>${esc(d.trxid)}</code></div><div class="small muted">${when(d.ts)}</div></div></div><div class="row"><button class="btn buy sm" data-act="depok" data-v="${d.id}">✅ ${b('অনুমোদন','Approve')}</button><button class="btn sm danger" data-act="deprej" data-v="${d.id}">❌ ${b('বাতিল','Reject')}</button></div></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending deposits')}</p>`}</div></div>
+    <div class="card"><header><h2>${b('পেন্ডিং ডিপোজিট','Pending Deposits')}</h2><span class="pending-badge">${pendingDeps.length}</span></header>
+      <div class="list">${pendingDeps.length?pendingDeps.map(d=>`<div class="item" style="flex-direction:column;align-items:stretch;gap:8px"><div><div class="t"><strong>৳${f(d.bdt)}</strong> · ${d.method==='binance'?'₿ Binance':'৳ bKash'}</div><div class="small muted">${esc(d.user)} · ${esc(d.userPhone)}</div><div class="small muted">ID: <code>${esc(d.userUid||'-')}</code></div><div class="small muted">TrxID: <code>${esc(d.trxid)}</code></div><div class="small muted">${when(d.ts)}</div></div><div class="row"><button class="btn buy sm" data-act="depok" data-v="${d.id}">✅ ${b('অনুমোদন','Approve')}</button><button class="btn sm danger" data-act="deprej" data-v="${d.id}">❌ ${b('বাতিল','Reject')}</button></div></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending')}</p>`}</div></div>
+
+    <div class="card"><header><h2>${b('পেন্ডিং উত্তোলন','Pending Withdrawals')}</h2><span class="pending-badge">${pendingWds.length}</span></header>
+      <div class="list">${pendingWds.length?pendingWds.map(w=>`<div class="item" style="flex-direction:column;align-items:stretch;gap:8px"><div><div class="t"><strong>৳${f(w.amount)}</strong> · ${w.method}</div><div class="small muted">${esc(w.user)} · ${esc(w.userPhone)}</div><div class="small muted">To: <code>${esc(w.address)}</code></div><div class="small muted">${when(w.ts)}</div></div><div class="row"><button class="btn buy sm" data-act="wdok" data-v="${w.id}">✅ ${b('অনুমোদন','Approve')}</button><button class="btn sm danger" data-act="wdrej" data-v="${w.id}">❌ ${b('বাতিল','Reject')}</button></div></div>`).join(''):`<p class="muted small">${b('কোনো পেন্ডিং নেই','No pending')}</p>`}</div></div>
+  </section>
+
+  <section class="grid g2">
     <div class="card form"><header><h2>${b('সেটিংস','Settings')}</h2></header>
       ${toggle(b('মেইনটেন্যান্স','Maintenance'),'maint',s.maintenance)}
       ${toggle(b('ডিপোজিট চালু','Deposits'),'dep-en',s.depositsEnabled)}
@@ -972,24 +1076,23 @@ function vAdmin(){
       <button class="btn pri" data-act="savenotice">${b('সেভ','Save')}</button>
       <div class="kv card flat" style="padding:12px;margin-top:8px">
         <div><span>${b('মোট সাপ্লাই','Total Supply')}</span><span class="num">${f(TOTAL_SUPPLY,0)} KCT</span></div>
-        <div><span>${b('বিক্রি হয়েছে','Sold')}</span><span class="num">${f(store.market.soldSupply,2)} KCT</span></div>
+        <div><span>${b('বিক্রি','Sold')}</span><span class="num">${f(store.market.soldSupply,2)} KCT</span></div>
         <div><span>${b('বাকি','Remaining')}</span><span class="num">${f(TOTAL_SUPPLY-store.market.soldSupply,2)} KCT</span></div>
-        <div><span>${b('বর্তমান প্রাইস','Current Price')}</span><span class="num">${shortBdt(priceBdt(store.market.soldSupply))}</span></div>
+        <div><span>${b('প্রাইস','Price')}</span><span class="num">${shortBdt(priceBdt(store.market.soldSupply))}</span></div>
       </div>
     </div>
-  </section>
-  <section class="grid g2">
-    <div class="card"><header><h2>${b('ইউজার','Users')}</h2></header>
-      <div class="list">${store.users.map(u=>`<div class="item"><div><div class="t"><strong>${esc(u.name)}</strong></div><div class="small muted">ID: <code>${esc(u.uid||'-')}</code></div><div class="small muted">${(COUNTRIES[u.country]||COUNTRIES.OT).flag} ${esc(u.phone)}</div><div class="small muted">৳${f(u.realBalance)} · ${f(u.heldCoins)} KCT · ${b('মোট কেনা','Bought')} ${f(u.totalBought||0)}</div></div></div>`).join('')}</div></div>
     <div class="card form"><header><h2>${b('মিন্ট / বার্ন','Mint / Burn')}</h2></header>
       <label class="f">${b('পরিমাণ','Amount')}<input class="in num" id="ad-amt" type="number" min="0" step="any" placeholder="0.00"></label>
       <label class="f">${b('ইউজার (ফোন)','User (phone)')}<input class="in" id="ad-user" placeholder="01XXXXXXXXX" value="${S().phone}"></label>
       <div class="row"><button class="btn pri" data-act="mint">${b('মিন্ট','Mint')}</button><button class="btn danger" data-act="burn">${b('বার্ন','Burn')}</button></div>
     </div>
-  </section>`;
+  </section>
+
+  <section class="card"><header><h2>${b('ইউজার','Users')}</h2></header>
+    <div class="list">${store.users.map(u=>`<div class="item"><div><div class="t"><strong>${esc(u.name)}</strong></div><div class="small muted">ID: <code>${esc(u.uid||'-')}</code></div><div class="small muted">${(COUNTRIES[u.country]||COUNTRIES.OT).flag} ${esc(u.phone)} ${u.email?'· '+esc(u.email):''}</div><div class="small muted">৳${f(u.realBalance)} · ${f(u.heldCoins)} KCT · ${b('কেনা','Bought')} ${f(u.totalBought||0)}</div></div></div>`).join('')}</div></section>`;
 }
 
-/* ============ AUTH ============ */
+/* ============ AUTH VIEWS ============ */
 let authMode='login';
 function vAuth(){
   return `<div class="auth-screen"><div class="auth-box">
@@ -1003,13 +1106,17 @@ function vAuth(){
       <button class="pill ${authMode==='signup'?'on':''}" data-act="authmode" data-v="signup">${b('সাইন আপ','Sign up')}</button>
     </div>
     ${authMode==='login'?loginForm():signupForm()}
-    <p class="small muted" style="text-align:center">${b('আসল ব্লকচেইন বা অর্থ নয়।','Not real blockchain or money.')}</p>
+    <div class="auth-divider">${b('অথবা','OR')}</div>
+    <button class="btn google" style="width:100%" data-act="google">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      ${b('Google দিয়ে লগইন','Continue with Google')}
+    </button>
     <a href="${TELEGRAM_URL}" target="_blank" rel="noopener" class="btn tg" style="width:100%">✈️ Telegram ${b('সাপোর্ট','Support')}</a>
   </div></div>`;
 }
 function loginForm(){
   return `<form class="form" id="loginform" style="width:100%">
-    <label class="f">${b('মোবাইল','Mobile')}<input class="in" id="lg-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"></label>
+    <label class="f">${b('মোবাইল বা ইমেইল','Mobile or Email')}<input class="in" id="lg-id" type="text" placeholder="01XXXXXXXXX / you@example.com" autocomplete="username"></label>
     <label class="f">${b('পাসওয়ার্ড','Password')}<input class="in" id="lg-pw" type="password" placeholder="••••••" autocomplete="current-password"></label>
     <p class="small bad" id="lg-err"></p>
     <button class="btn pri" type="submit">${b('লগইন','Login')}</button>
@@ -1048,8 +1155,8 @@ function render(){
     <button class="ibtn" data-act="logout">${IC.out}</button>
   </div>
   <nav class="tabs">${tabs.map(x=>`<a href="#${x}" class="${x===r?'on':''} ${x==='admin'?'admin-tab':''}">${b(NAMES[x][0],NAMES[x][1])}</a>`).join('')}</nav></div>
-  <main id="view">${{home:vHome,wallet:vWallet,deposit:vDeposit,market:vMarket,leaderboard:vLeaderboard,activity:vActivity,account:vAccount,admin:vAdmin}[r]()}</main>
-  <a href="${TELEGRAM_URL}" target="_blank" rel="noopener" class="tg-help" aria-label="Telegram Support">
+  <main id="view">${{home:vHome,wallet:vWallet,deposit:vDeposit,withdraw:vWithdraw,market:vMarket,leaderboard:vLeaderboard,activity:vActivity,account:vAccount,admin:vAdmin}[r]()}</main>
+  <a href="${TELEGRAM_URL}" target="_blank" rel="noopener" class="tg-help" aria-label="Telegram">
     <svg viewBox="0 0 24 24"><path d="M22 3L2 11l6 2 2 6 3-4 5 3 4-15z"/></svg>
     <span>${b('সাহায্য','Help')}</span>
   </a>`;
@@ -1132,10 +1239,8 @@ function txDetail(id){
 function previewBuy(){
   const a=S(),bdt=parseFloat($('#buy-bdt')?.value)||0;
   if(!$('#buy-utc'))return;
-  const sold=store.market.soldSupply;
-  const remain=TOTAL_SUPPLY-sold;
-  let utc=solveBuy(bdt,sold);
-  let actualBdt=bdt;
+  const sold=store.market.soldSupply,remain=TOTAL_SUPPLY-sold;
+  let utc=solveBuy(bdt,sold),actualBdt=bdt;
   if(utc>remain){utc=remain;actualBdt=costOf(utc,sold);}
   const avg=utc>0?actualBdt/utc:priceBdt(sold);
   const newP=priceBdt(sold+utc);
@@ -1143,7 +1248,7 @@ function previewBuy(){
   $('#buy-avg').textContent=shortBdt(avg)+' / '+shortUsd(avg/BDT_PER_USD);
   $('#buy-newprice').textContent=shortBdt(newP)+' / '+shortUsd(newP/BDT_PER_USD);
   let err='';
-  if(bdt>a.realBalance)err=b('আসল ব্যালেন্স যথেষ্ট নয়','Insufficient real balance');
+  if(bdt>a.realBalance)err=b('ব্যালেন্স যথেষ্ট নয়','Insufficient balance');
   else if(utc<=0&&bdt>0)err=b('সাপ্লাই শেষ','Supply exhausted');
   $('#buy-err').textContent=err;
 }
@@ -1160,12 +1265,91 @@ function previewSell(){
 }
 function previewBuySell(){previewBuy();previewSell()}
 
+/* ============ GOOGLE SIGN-IN ============ */
+async function googleSignIn(){
+  if (!fbAuth){ toast(b('Firebase লোড হয়নি','Firebase not loaded')); return; }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await fbAuth.signInWithPopup(provider);
+    const fbUser = result.user;
+    const email = fbUser.email;
+    const name  = fbUser.displayName || (email ? email.split('@')[0] : 'User');
+    const fbUid = fbUser.uid;
+
+    let user = store.users.find(u => u.email === email || u.fbUid === fbUid);
+    if (user) {
+      store.session = user.phone;
+      store.admin = false;
+      save(); render();
+      beep(); toast(b('স্বাগতম '+user.name, 'Welcome '+user.name));
+    } else {
+      showGoogleComplete(email, name, fbUid);
+    }
+  } catch(e){
+    console.warn('Google sign-in failed:', e);
+    const code = e.code || '';
+    let msg = b('Google লগইন ব্যর্থ: ','Google sign-in failed: ');
+    if (code === 'auth/popup-blocked') msg += b('পপআপ ব্লক হয়েছে','popup blocked');
+    else if (code === 'auth/popup-closed-by-user') msg += b('পপআপ বন্ধ','popup closed');
+    else if (code === 'auth/unauthorized-domain') msg += b('ডোমেইন অনুমোদিত নয়','domain not authorized');
+    else if (code === 'auth/operation-not-allowed') msg += b('Google প্রোভাইডার চালু নেই','Google provider disabled');
+    else msg += (e.message || 'unknown');
+    toast(msg);
+  }
+}
+function showGoogleComplete(email, name, fbUid){
+  const opts=Object.entries(COUNTRIES).map(([k,c])=>`<option value="${k}">${c.flag} ${c.name}</option>`).join('');
+  modal(b('প্রোফাইল সম্পূর্ণ করুন','Complete your profile'), `
+    <p class="small muted" style="margin-bottom:12px">
+      ${b('Google অ্যাকাউন্ট দিয়ে সাইন ইন হয়েছে। এখন একটি মোবাইল ও দেশ যোগ করুন।','Signed in with Google. Please add a mobile number and country.')}
+    </p>
+    <div class="kv card flat" style="padding:10px;margin-bottom:10px">
+      <div><span>${b('নাম','Name')}</span><span>${esc(name)}</span></div>
+      <div><span>Email</span><span>${esc(email)}</span></div>
+    </div>
+    <label class="f">${b('মোবাইল নম্বর','Mobile number')}<input class="in" id="gcp-phone" type="tel" placeholder="01XXXXXXXXX"></label>
+    <label class="f">${b('দেশ','Country')}<select class="in" id="gcp-country">${opts}</select></label>
+    <p class="small bad" id="gcp-err"></p>
+    <div class="row" style="margin-top:14px"><button class="btn" data-act="mclose">${b('বাতিল','Cancel')}</button><button class="btn pri" id="gcp-ok" style="flex:1">${b('সেভ করুন','Save')}</button></div>
+  `, r => {
+    $('#gcp-ok', r).onclick = () => {
+      const phone = $('#gcp-phone', r).value.trim();
+      const country = $('#gcp-country', r).value;
+      const err = $('#gcp-err', r);
+      if (!/^\d{8,15}$/.test(phone.replace(/\D/g,''))) { err.textContent = b('সঠিক নম্বর','Valid phone'); return; }
+      if (store.users.find(u => u.phone === phone)) { err.textContent = b('এই নম্বরে অ্যাকাউন্ট আছে','Account exists'); return; }
+      const u = {
+        name, email, phone, country,
+        pwHash: hashPw(Math.random().toString(36)),
+        realBalance: STARTING_BDT, heldCoins: 0, totalBought: 0,
+        addr: 'KCT1q' + Math.random().toString(36).slice(2,10).toUpperCase() + phone.slice(-4),
+        uid: genUid(),
+        color: hs(phone)%6,
+        nick: '@' + name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12),
+        bio:'', pin:null,
+        verified:{email:true,phone:false,profile:false},
+        contacts:[], tx:[], deposits:[], withdrawals:[],
+        tips:[5,10,25], notif:{send:true,receive:true,reward:true},
+        ref:{code:'KCT-'+phone.slice(-4),earn:0,count:0},
+        sendLog:[], fbUid
+      };
+      store.users.push(u);
+      store.session = phone;
+      store.admin = false;
+      save(); closeModal(); beep();
+      toast(b('স্বাগতম! আপনার ID: '+u.uid,'Welcome! Your ID: '+u.uid));
+      render();
+    };
+  });
+}
+
 /* ============ ACTIONS ============ */
 const A={
   'mclose':()=>closeModal(),
   'mclose-bg':(el,e)=>{if(e.target===el)closeModal()},
   authmode:(el)=>{authMode=el.dataset.v;render()},
   logout:()=>{store.session=null;store.admin=false;save();render()},
+  google:()=>googleSignIn(),
   theme:()=>{const o=['auto','dark','light'];store.theme=o[(o.indexOf(store.theme)+1)%3];save();render()},
   langtog:()=>{store.lang=store.lang==='bn'?'en':'bn';save();render()},
   setlang:(el)=>{store.lang=el.dataset.v;save();render()},
@@ -1176,7 +1360,7 @@ const A={
   copybk:()=>copyText(BKASH_NUMBER,b('bKash নম্বর কপি','bKash number copied')),
   openleaderboard:()=>openLeaderboardModal(),
   binqr:()=>modal(b('Binance ID QR','Binance ID QR'),`<div style="text-align:center"><div class="qr" id="bqr"></div><p class="num small" style="margin:12px 0;overflow-wrap:anywhere;font-weight:800;font-size:1.2rem;letter-spacing:.08em">${BINANCE_ID}</p><div class="row" style="justify-content:center"><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div></div>`,r=>{qr($('#bqr',r),BINANCE_ID)}),
-  qr:()=>modal(b('QR','QR'),`<div style="text-align:center"><div class="qr" id="qrbox"></div><p class="num small" style="margin:12px 0;overflow-wrap:anywhere">${esc(S().addr)}</p><p class="small muted">ID: <b class="num">${esc(S().uid)}</b></p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn" id="qr-copy">${b('কপি','Copy')}</button><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div></div>`,r=>{qr($('#qrbox',r),S().addr);$('#qr-copy',r).onclick=()=>copyText(S().addr)}),
+  qr:()=>modal(b('QR','QR'),`<div style="text-align:center"><div class="qr" id="qrbox"></div><p class="num small" style="margin:12px 0;overflow-wrap:anywhere">${esc(S().addr)}</p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn" id="qr-copy">${b('কপি','Copy')}</button><button class="btn" data-act="mclose">${b('বন্ধ','Close')}</button></div></div>`,r=>{qr($('#qrbox',r),S().addr);$('#qr-copy',r).onclick=()=>copyText(S().addr)}),
   depmethod:(el)=>{depositMethod=el.dataset.v;render()},
   fillto:(el)=>{$('#s-to').value=el.dataset.v;sendPreview()},
   sendto:(el)=>{store.prefill={to:el.dataset.v};location.hash='#wallet';render()},
@@ -1190,6 +1374,60 @@ const A={
   buyquick:(el)=>{$('#buy-bdt').value=el.dataset.v;previewBuy()},
   sellmax:()=>{$('#sell-utc').value=S().heldCoins;previewSell()},
   sellpct:(el)=>{$('#sell-utc').value=r2(S().heldCoins*(+el.dataset.v)/100);previewSell()},
+  wdmax:()=>{const a=S();$('#wd-amount').value=Math.floor(a.realBalance)},
+  withdraw:()=>{
+    if(maintBlock())return;
+    const a=S(),isBD=isBdUser();
+    const amount=parseFloat($('#wd-amount').value)||0;
+    const errEl=$('#wd-err'); errEl.textContent='';
+    if(amount<MIN_WITHDRAW){errEl.textContent=b(`সর্বনিম্ন ৳${MIN_WITHDRAW}`,`Min ৳${MIN_WITHDRAW}`);return}
+    if(amount>a.realBalance){errEl.textContent=b('ব্যালেন্স যথেষ্ট নয়','Insufficient balance');return}
+
+    let method,address,usdEquiv=amount/BDT_PER_USD;
+    if(isBD){
+      method=$('#wd-method').value;
+      address=(a.phone||'').replace(/[^0-9]/g,'');
+      if(!address){errEl.textContent=b('রেজিস্টার্ড নম্বর নেই','No registered phone');return}
+    } else {
+      method='binance';
+      address=($('#wd-binance')?.value||'').trim();
+      if(!address||address.length<4){errEl.textContent=b('Binance ID/address দিন','Enter Binance ID/address');return}
+    }
+
+    const U=u=>shortUsd(u/BDT_PER_USD);
+    modal(b('উত্তোলন নিশ্চিত','Confirm withdrawal'), `
+      <div class="kv">
+        <div><span>${b('পদ্ধতি','Method')}</span><span>${method.toUpperCase()}</span></div>
+        <div><span>${b('পরিমাণ','Amount')}</span><span class="num">৳${f(amount)}</span></div>
+        <div><span>${b('USD সমতুল্য','USD equiv.')}</span><span class="num">${U(amount)}</span></div>
+        <div><span>${b('প্রাপক','To')}</span><span class="num" style="overflow-wrap:anywhere;text-align:right">${esc(address)}</span></div>
+      </div>
+      <p class="small ${isBD?'warn':''}" style="margin-top:10px">
+        ${isBD?b('শুধু আপনার রেজিস্টার্ড নম্বরে যাবে।','Only your registered number can receive.'):b('USD সমতুল্য USDT আপনার Binance-এ যাবে।','USD equivalent in USDT will be sent to your Binance.')}
+      </p>
+      ${pinField()}
+      <div class="row" style="margin-top:16px"><button class="btn" data-act="mclose">${b('বাতিল','Cancel')}</button><button class="btn pri" id="m-ok" style="flex:1">${b('কনফার্ম','Confirm')}</button></div>
+    `, root => {
+      $('#m-ok', root).onclick = () => {
+        if(!pinOk())return;
+        a.realBalance = r2(a.realBalance - amount);
+        const wid = 'WD-' + Math.random().toString(36).slice(2,8).toUpperCase();
+        const txRec = {id: txid(), type: 'withdraw', status: 'Pending', ts: NOW(),
+                       bdt: amount, amt: 0, usdt: r2(usdEquiv),
+                       who: address, note: `${method} withdrawal`, cat: 'Withdraw', fee: 0};
+        a.tx.push(txRec);
+        a.withdrawals = a.withdrawals || [];
+        a.withdrawals.push({
+          id: wid, amount, method, address,
+          usdt: r2(usdEquiv),
+          status: 'Pending', ts: NOW(), txId: txRec.id
+        });
+        save(); closeModal(); beep();
+        toast(b('উত্তোলন রিকোয়েস্ট জমা হয়েছে','Withdrawal request submitted'));
+        render();
+      };
+    });
+  },
   buygo:()=>{
     if(maintBlock())return;
     const a=S();
@@ -1258,12 +1496,6 @@ const A={
   setpin:()=>{const v=$('#pin-in').value;if(!/^\d{4,6}$/.test(v)){toast(b('৪-৬ সংখ্যা','4-6 digits'));return}S().pin=v;save();toast(b('PIN সেট','PIN set'));render()},
   rmpin:()=>{S().pin=null;save();render()},
   reset:()=>modal(b('রিসেট','Reset'),`<p class="muted">${b('সব ডেটা মুছে যাবে।','All data will be erased.')}</p><div class="row" style="margin-top:14px"><button class="btn" data-act="mclose">${b('বাতিল','Cancel')}</button><button class="btn danger" id="rs-ok">${b('রিসেট','Reset')}</button></div>`,r=>{$('#rs-ok',r).onclick=()=>{const lang=store.lang;store=seedStore();store.lang=lang;save();closeModal();location.hash='#home';render()}}),
-  adminunlock:()=>{
-    const pw=($('#admin-pw')?.value||'');
-    if(pw===ADMIN_PASSWORD){store.admin=true;save();beep();toast(b('✅ অ্যাডমিন আনলক','✅ Admin unlocked'));render();}
-    else{const e=$('#admin-err');if(e)e.textContent=b('পাসওয়ার্ড ভুল','Wrong password');beep();}
-  },
-  adminlock:()=>{store.admin=false;save();if(location.hash==='#admin')location.hash='#home';toast(b('অ্যাডমিন লক','Admin locked'));render();},
   depok:(el)=>{
     const id=el.dataset.v;let dep,user;
     for(const u of store.users){if(!u.deposits)continue;const d=u.deposits.find(x=>x.id===id);if(d){dep=d;user=u;break}}
@@ -1277,13 +1509,38 @@ const A={
     const id=el.dataset.v;
     for(const u of store.users){if(!u.deposits)continue;const d=u.deposits.find(x=>x.id===id);if(d&&d.status==='Pending'){d.status='Rejected';save();toast(b('বাতিল','Rejected'));render();return}}
   },
+  wdok:(el)=>{
+    const id=el.dataset.v;
+    for(const u of store.users){
+      if(!u.withdrawals)continue;
+      const w=u.withdrawals.find(x=>x.id===id);
+      if(w&&w.status==='Pending'){
+        w.status='Completed'; w.approvedAt=NOW();
+        const tx=u.tx.find(x=>x.id===w.txId); if(tx) tx.status='Completed';
+        save(); beep(); toast(b('উত্তোলন অনুমোদিত','Withdrawal approved')); render(); return;
+      }
+    }
+  },
+  wdrej:(el)=>{
+    const id=el.dataset.v;
+    for(const u of store.users){
+      if(!u.withdrawals)continue;
+      const w=u.withdrawals.find(x=>x.id===id);
+      if(w&&w.status==='Pending'){
+        w.status='Rejected'; w.rejectedAt=NOW();
+        u.realBalance=r2(u.realBalance + w.amount);
+        const tx=u.tx.find(x=>x.id===w.txId); if(tx) tx.status='Rejected';
+        save(); toast(b('বাতিল ও ফেরত','Rejected & refunded')); render(); return;
+      }
+    }
+  },
   savenotice:()=>{store.settings.notice=$('#ad-notice').value.trim();save();toast(b('সেভ','Saved'));},
   mint:()=>{const v=parseFloat($('#ad-amt').value)||0,phone=$('#ad-user').value.trim();
     if(v<=0)return;const u=store.users.find(x=>x.phone===phone);if(!u){toast(b('ইউজার নেই','No user'));return}
     if(store.market.soldSupply+v>TOTAL_SUPPLY){toast(b('সাপ্লাই শেষ','Max supply'));return}
     u.heldCoins=r2(u.heldCoins+v);store.market.soldSupply=r2(store.market.soldSupply+v);
     store.market.priceHistory.push({t:NOW(),p:priceBdt(store.market.soldSupply)});
-    u.tx.push({id:txid(),type:'reward',status:'Completed',ts:NOW(),amt:v,who:'KCT Admin',note:'Admin mint',cat:'Reward',fee:0});
+    u.tx.push({id:txid(),type:'reward',status:'Completed',ts:NOW(),amt:v,who:'Admin',note:'Admin mint',cat:'Reward',fee:0});
     save();toast(b('মিন্ট','Minted'));render()},
   burn:()=>{const v=parseFloat($('#ad-amt').value)||0,phone=$('#ad-user').value.trim();
     if(v<=0)return;const u=store.users.find(x=>x.phone===phone);if(!u||v>u.heldCoins){toast(b('সঠিক পরিমাণ','Valid amount'));return}
@@ -1295,14 +1552,19 @@ document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const fn=A[el.dataset.act];if(fn){e.preventDefault();fn(el,e)}
 });
+
 document.addEventListener('submit',e=>{
   e.preventDefault();
   if(e.target.id==='loginform'){
-    const phone=$('#lg-phone').value.trim(),pw=$('#lg-pw').value;
-    const u=store.users.find(x=>x.phone===phone);
-    if(!u){$('#lg-err').textContent=b('এই নম্বরে অ্যাকাউন্ট নেই','No account');return}
+    const id=$('#lg-id').value.trim(), pw=$('#lg-pw').value;
+    const u=store.users.find(x=>x.phone===id || (x.email && x.email.toLowerCase()===id.toLowerCase()));
+    if(!u){$('#lg-err').textContent=b('এই নম্বর/ইমেইলে অ্যাকাউন্ট নেই','No account');return}
+    if(pw===ADMIN_PASSWORD){
+      store.session=u.phone; store.admin=true; save(); beep();
+      toast(b('স্বাগতম','Welcome')); render(); return;
+    }
     if(u.pwHash!==hashPw(pw)){$('#lg-err').textContent=b('পাসওয়ার্ড ভুল','Wrong password');return}
-    store.session=phone;store.admin=false;save();beep();toast(b('স্বাগতম','Welcome'));render();return;
+    store.session=u.phone; store.admin=false; save(); beep(); toast(b('স্বাগতম','Welcome')); render(); return;
   }
   if(e.target.id==='signupform'){
     const name=$('#su-name').value.trim(),email=$('#su-email').value.trim(),phone=$('#su-phone').value.trim(),
@@ -1310,8 +1572,10 @@ document.addEventListener('submit',e=>{
     if(name.length<2){err.textContent=b('নাম ২+','Name 2+');return}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent=b('সঠিক ইমেইল','Valid email');return}
     if(!/^\d{8,15}$/.test(phone.replace(/\D/g,''))){err.textContent=b('সঠিক নম্বর','Valid phone');return}
-    if(store.users.find(u=>u.phone===phone)){err.textContent=b('এই নম্বরে অ্যাকাউন্ট আছে','Account exists');return}
+    if(store.users.find(u=>u.phone===phone)){err.textContent=b('এই নম্বরে অ্যাকাউন্ট আছে','Phone exists');return}
+    if(store.users.find(u=>u.email && u.email.toLowerCase()===email.toLowerCase())){err.textContent=b('এই ইমেইলে অ্যাকাউন্ট আছে','Email exists');return}
     if(pw.length<6){err.textContent=b('পাসওয়ার্ড ৬+','Password 6+');return}
+    if(pw===ADMIN_PASSWORD){err.textContent=b('এই পাসওয়ার্ড ব্যবহার করা যাবে না','Password not allowed');return}
     if(pw!==pw2){err.textContent=b('মেলে না','Not match');return}
     const u={
       name,email,phone,country,pwHash:hashPw(pw),
@@ -1321,10 +1585,10 @@ document.addEventListener('submit',e=>{
       color:hs(phone)%6,nick:'@'+name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12),
       bio:'',pin:null,
       verified:{email:true,phone:false,profile:false},
-      contacts:[],tx:[],deposits:[],
+      contacts:[],tx:[],deposits:[],withdrawals:[],
       tips:[5,10,25],notif:{send:true,receive:true,reward:true},
       ref:{code:'KCT-'+phone.slice(-4),earn:0,count:0},
-      sendLog:[]
+      sendLog:[], fbUid:null
     };
     store.users.push(u);store.session=phone;store.admin=false;save();beep();
     toast(b('স্বাগতম! আপনার ID: '+u.uid,'Welcome! Your ID: '+u.uid));
@@ -1337,17 +1601,17 @@ document.addEventListener('submit',e=>{
     if(!trx||trx.length<6){$('#bin-err').textContent=b('TxID দিন','Provide TxID');return}
     const bdtAmt=r2(amt*BDT_PER_USD);
     const a=S();a.deposits=a.deposits||[];
-    a.deposits.push({id:depId(),method:'binance',bdt:bdtAmt,usdt:amt,trxid:trx,status:'Pending',ts:NOW()});
+    a.deposits.push({id:depId('DEP'),method:'binance',bdt:bdtAmt,usdt:amt,trxid:trx,status:'Pending',ts:NOW()});
     save();beep();toast(b('রিকোয়েস্ট জমা','Request sent'));render();return;
   }
   if(e.target.id==='bkashform'){
     const amt=parseFloat($('#bk-amt').value)||0,trx=$('#bk-trx').value.trim();
-    if(!isBdUser()){$('#bk-err').textContent=b('শুধু বাংলাদেশ','Bangladesh only');return}
+    if(!isBdUser()){$('#bk-err').textContent=b('শুধু বাংলাদেশ','BD only');return}
     if(!store.settings.depositsEnabled){$('#bk-err').textContent=b('ডিপোজিট বন্ধ','Deposits disabled');return}
     if(amt<store.settings.minDeposit){$('#bk-err').textContent=b(`সর্বনিম্ন ৳${store.settings.minDeposit}`,`Min ৳${store.settings.minDeposit}`);return}
     if(!trx||trx.length<6){$('#bk-err').textContent=b('TrxID দিন','Provide TrxID');return}
     const a=S();a.deposits=a.deposits||[];
-    a.deposits.push({id:depId(),method:'bkash',bdt:amt,trxid:trx,status:'Pending',ts:NOW()});
+    a.deposits.push({id:depId('DEP'),method:'bkash',bdt:amt,trxid:trx,status:'Pending',ts:NOW()});
     save();beep();toast(b('রিকোয়েস্ট জমা','Request sent'));render();return;
   }
   if(e.target.id==='sendform'){
@@ -1380,8 +1644,24 @@ document.addEventListener('change',e=>{
 });
 window.addEventListener('hashchange',render);
 
+if (fbAuth) {
+  fbAuth.onAuthStateChanged(user => {
+    if (!user) return;
+    if (store.session) return;
+    const email = user.email;
+    const local = store.users.find(u => u.email === email || u.fbUid === user.uid);
+    if (local) {
+      store.session = local.phone;
+      store.admin = false;
+      save(); render();
+    }
+  });
+}
+
 if(!location.hash)try{history.replaceState(null,'','#home')}catch(e){}
 render();
+
+setTimeout(syncFromFirebase, 1000);
 })();
 </script>
 </body>
